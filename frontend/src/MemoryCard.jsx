@@ -1,10 +1,92 @@
+import { useRef } from 'react';
 import { mediaUrl } from './constants';
 import MusicPlayer from './MusicPlayer';
+import StickyNote from './StickyNote';
+
+function PhotoSlotWithNotes({
+    photo,
+    photoIndex,
+    title,
+    memoryId,
+    notes,
+    placingNote,
+    onCreateNote,
+    onUpdateNote,
+    onDeleteNote,
+    newNoteId,
+}) {
+    const slotRef = useRef(null);
+
+    const handleSlotClick = (e) => {
+        if (!placingNote) return;
+        e.stopPropagation();
+        const rect = slotRef.current?.getBoundingClientRect();
+        let pctX = 50;
+        let pctY = 50;
+        if (rect && rect.width > 0 && rect.height > 0) {
+            pctX = Math.max(12, Math.min(88, ((e.clientX - rect.left) / rect.width) * 100));
+            pctY = Math.max(15, Math.min(85, ((e.clientY - rect.top) / rect.height) * 100));
+        }
+        onCreateNote({
+            memory_id: memoryId,
+            photo_index: photoIndex,
+            pos_x: Math.round(pctX * 10) / 10,
+            pos_y: Math.round(pctY * 10) / 10,
+        });
+    };
+
+    const handleQuickAdd = (e) => {
+        e.stopPropagation();
+        const offset = (notes.length % 4) * 6;
+        onCreateNote({
+            memory_id: memoryId,
+            photo_index: photoIndex,
+            pos_x: Math.min(82, 46 + offset),
+            pos_y: Math.min(80, 44 + offset),
+        });
+    };
+
+    return (
+        <div
+            ref={slotRef}
+            className={`photo-slot ${placingNote ? 'sticky-placement-target' : ''}`}
+            onClick={handleSlotClick}
+        >
+            <img
+                src={mediaUrl(photo)}
+                alt={`${title} - photo ${photoIndex + 1}`}
+                loading="lazy"
+            />
+
+            <button
+                type="button"
+                className="photo-add-note-btn"
+                onClick={handleQuickAdd}
+                title="Add a sticky note on this picture"
+            >
+                📌 + Note
+            </button>
+
+            {notes.map((note) => (
+                <StickyNote
+                    key={note.id}
+                    note={note}
+                    variant="photo"
+                    containerRef={slotRef}
+                    onUpdate={onUpdateNote}
+                    onDelete={onDeleteNote}
+                    autoFocus={note.id === newNoteId}
+                />
+            ))}
+        </div>
+    );
+}
 
 function MemoryCard(props) {
     const layoutClass = `card-base memory-card ${props.layout || 'layout-1'}`;
 
     const photos = Array.isArray(props.photos) ? props.photos : [];
+    const cardNotes = Array.isArray(props.notes) ? props.notes : [];
 
     // Show dates like "Oct 7, 2026" when possible
     const formattedDate = (() => {
@@ -35,13 +117,19 @@ function MemoryCard(props) {
             {photos.length > 0 ? (
                 <div className="photo-grid">
                     {photos.map((photo, i) => (
-                        <div key={i} className="photo-slot">
-                            <img
-                                src={mediaUrl(photo)}
-                                alt={`${props.title} - photo ${i + 1}`}
-                                loading="lazy"
-                            />
-                        </div>
+                        <PhotoSlotWithNotes
+                            key={i}
+                            photo={photo}
+                            photoIndex={i}
+                            title={props.title}
+                            memoryId={props.id}
+                            notes={cardNotes.filter(n => Number(n.photo_index) === i)}
+                            placingNote={props.placingNote}
+                            onCreateNote={props.onCreateNote}
+                            onUpdateNote={props.onUpdateNote}
+                            onDeleteNote={props.onDeleteNote}
+                            newNoteId={props.newNoteId}
+                        />
                     ))}
                 </div>
             ) : null}

@@ -36,6 +36,7 @@ function App() {
   );
 
   const [memories, setMemories] = useState([]);
+  const [notes, setNotes] = useState([]);
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
@@ -43,6 +44,7 @@ function App() {
     setToken('');
     setUser(null);
     setMemories([]);
+    setNotes([]);
     setShowGallery(false);
     setLeaving(false);
   }, []);
@@ -64,6 +66,7 @@ function App() {
   useEffect(() => {
     if (!token) {
       setMemories([]);
+      setNotes([]);
       return;
     }
 
@@ -94,6 +97,23 @@ function App() {
         }
       })
       .catch(err => console.error('Could not fetch memories:', err));
+
+    fetch(`${API_URL}/api/notes`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(async response => {
+        if (response.status === 401) {
+          handleLogout();
+          return null;
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (Array.isArray(data)) {
+          setNotes(data);
+        }
+      })
+      .catch(err => console.error('Could not fetch sticky notes:', err));
   }, [token, handleLogout, handleUpdateUser]);
 
 
@@ -111,7 +131,8 @@ function App() {
       })
       .then(data => {
         if (data.success) {
-          setMemories(memories => memories.filter(memory => memory.id !== id))
+          setMemories(memories => memories.filter(memory => memory.id !== id));
+          setNotes(prev => prev.filter(note => note.memory_id !== id));
         }
       })
   }
@@ -134,6 +155,8 @@ function App() {
           memories={memories}
           setMemories={setMemories}
           deleteMemory={deleteMemory}
+          notes={notes}
+          setNotes={setNotes}
           token={token}
           user={user}
           onUpdateUser={handleUpdateUser}

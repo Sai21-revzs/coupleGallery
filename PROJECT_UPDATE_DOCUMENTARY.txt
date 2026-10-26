@@ -140,3 +140,54 @@ with circle avatar + name and click-to-edit profile modal, and a floating
 --------------------------------------------------------------------------------
 - `users` table: `id`, `username`, `email`, `password_hash`, `avatar_path`, `created_at`
 - `memories.user_id` foreign key linking memories privately to each user account.
+
+================================================================================
+🎬 Phase 8: Customizable Sticky Notes (Page & Picture Placement)
+================================================================================
+
+THE MISSION:
+Allow users to insert customizable sticky notes anywhere on the gallery page or
+directly inside any memory picture, with 4 light pastel colors (white, pink,
+purple, yellow), drag-and-drop repositioning, and PostgreSQL persistence.
+
+--------------------------------------------------------------------------------
+1. STICKY NOTE BUTTON & FLOATING DOCK POSITION
+--------------------------------------------------------------------------------
+- Positioned in the bottom-right floating action dock (`.floating-actions-dock`)
+  right above the `+ Add Memory` button so all creation controls are grouped in
+  one accessible spot.
+- Includes a live color palette pill (`Note color:`) above the `📌 + Sticky Note`
+  button so the user can pre-select their preferred note color before placing it.
+- Also provides a quick `📌 + Note` button in the bottom-right corner of every
+  individual photo slot on hover for one-click picture note insertion.
+
+--------------------------------------------------------------------------------
+2. PLACEMENT ANYWHERE ON THE PAGE OR INSIDE ANY PICTURE
+--------------------------------------------------------------------------------
+- Clicking `📌 + Sticky Note` activates placement mode with a helper banner at
+  the top of the gallery.
+- Clicking anywhere on the gallery page pins a page-level sticky note at that
+  exact `(pos_x, pos_y)` coordinate.
+- Clicking inside any photo slot pins a compact picture-level sticky note
+  directly onto that specific photo (`memory_id` + `photo_index`).
+- Both page-level and picture-level sticky notes can be freely dragged by their
+  header bar (`📌`) and automatically save their updated coordinates.
+
+--------------------------------------------------------------------------------
+3. 4 LIGHT PASTEL COLORS & LIVE CUSTOMIZATION
+--------------------------------------------------------------------------------
+- Every sticky note supports 4 light pastel colors:
+  * Soft White (`white`)
+  * Light Pink (`pink`)
+  * Light Purple (`purple`)
+  * Light Yellow (`yellow`)
+- Each note header features 4 circular color swatches to switch colors on the fly,
+  auto-saving text textarea, and a delete (`✕`) button.
+
+--------------------------------------------------------------------------------
+4. POSTGRESQL PERSISTENCE (`004_add_sticky_notes.sql`)
+--------------------------------------------------------------------------------
+- `sticky_notes` table: `id`, `user_id`, `memory_id`, `photo_index`, `content`,
+  `color`, `pos_x`, `pos_y`, `created_at`, `updated_at`.
+- REST endpoints: `GET /api/notes`, `POST /api/notes`, `PUT /api/notes/:id`,
+  and `DELETE /api/notes/:id`.

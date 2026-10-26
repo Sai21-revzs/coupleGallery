@@ -64,6 +64,29 @@ async function initDatabase() {
     await pool.query(`
         CREATE INDEX IF NOT EXISTS idx_memories_user_id ON memories(user_id);
     `);
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS sticky_notes (
+            id          SERIAL PRIMARY KEY,
+            user_id     INTEGER REFERENCES users(id) ON DELETE CASCADE,
+            memory_id   INTEGER REFERENCES memories(id) ON DELETE CASCADE,
+            photo_index INTEGER,
+            content     TEXT NOT NULL DEFAULT '',
+            color       VARCHAR(20) NOT NULL DEFAULT 'yellow',
+            pos_x       REAL NOT NULL DEFAULT 50,
+            pos_y       REAL NOT NULL DEFAULT 50,
+            created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    `);
+
+    await pool.query(`
+        CREATE INDEX IF NOT EXISTS idx_sticky_notes_user_id ON sticky_notes(user_id);
+    `);
+
+    await pool.query(`
+        CREATE INDEX IF NOT EXISTS idx_sticky_notes_memory_id ON sticky_notes(memory_id);
+    `);
 }
 
 // ===================== AUTHENTICATION HELPERS =====================
@@ -568,6 +591,87 @@ app.delete('/api/memories/:id', requireAuth, async (req, res) => {
     }
     await removeFiles([...(deleted.photos || []), deleted.music_path].map(toDiskPath));
     res.json({ success: true, message: 'item deleted' });
+});
+
+// ===================== STICKY NOTES ROUTES =====================
+
+const NOTE_COLORS = new Set(['white', 'pink', 'purple', 'yellow']);
+
+app.get('/api/notes', requireAuth, async (req, res) => {
+    const result = await pool.query(
+        'SELECT * FROM sticky_notes WHERE user_id = $1 ORDER BY created_at ASC',
+        [req.user.id]
+    );
+    res.json(result.rows);
+});
+
+app.post('/api/notes', requireAuth, async (req, res) => {
+    const content = typeof req.body?.content === 'string' ? req.body.content.slice(0, 2000) : '';
+    const color = NOTE_COLORS.has(req.body?.color) ? req.body.color : 'yellow';
+    const posX = Number.isFinite(Number(req.body?.pos_x)) ? Number(req.body.pos_x) : 50;
+    const posY = Number.isFinite(Number(req.body?.pos_y)) ? Number(req.body.pos_y) : 50;
+    const memoryId = req.body?.memory_id != null ? Number(req.body.memory_id) : null;
+    const photoIndex = req.body?.photo_index != null ? Number(req.body.photo_index) : null;
+
+    if (memoryId != null) {
+        const memCheck = await pool.query(
+            'SELECT id FROM memories WHERE id = $1 AND user_id = $2',
+            [memoryId, req.user.id]
+        );
+        if (memCheck.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'Memory not found.' });
+        }
+    }
+
+    const result = await pool.query(
+        `INSERT INTO sticky_notes (user_id, memory_id, photo_index, content, color, pos_x, pos_y)
+         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+        [req.user.id, memoryId, photoIndex, content, color, posX, posY]
+    );
+    res.status(201).json({ success: true, note: result.rows[0] });
+});
+
+app.put('/api/notes/:id', requireAuth, async (req, res) => {
+    const existing = await pool.query(
+        'SELECT * FROM sticky_notes WHERE id = $1 AND user_id = $2',
+        [req.params.id, req.user.id]
+    );
+    const current = existing.rows[0];
+    if (!current) {
+        return res.status(404).json({ success: false, error: 'Sticky note not found.' });
+    }
+
+    const content = typeof req.body?.content === 'string' ? req.body.content.slice(0, 2000) : current.content;
+    const color = NOTE_COLORS.has(req.body?.color) ? req.body.color : current.color;
+    const posX = Number.isFinite(Number(req.body?.pos_x)) ? Number(req.body.pos_x) : current.pos_x;
+    const posY = Number.isFinite(Number(req.body?.pos_y)) ? Number(req.body.pos_y) : current.pos_y;
+    const memoryId = req.body?.memory_id !== undefined
+        ? (req.body.memory_id != null ? Number(req.body.memory_id) : null)
+        : current.memory_id;
+    const photoIndex = req.body?.photo_index !== undefined
+        ? (req.body.photo_index != null ? Number(req.body.photo_index) : null)
+        : current.photo_index;
+
+    const result = await pool.query(
+        `UPDATE sticky_notes
+         SET content = $1, color = $2, pos_x = $3, pos_y = $4, memory_id = $5, photo_index = $6, updated_at = CURRENT_TIMESTAMP
+         WHERE id = $7 AND user_id = $8
+         RETURNING *`,
+        [content, color, posX, posY, memoryId, photoIndex, req.params.id, req.user.id]
+    );
+
+    res.json({ success: true, note: result.rows[0] });
+});
+
+app.delete('/api/notes/:id', requireAuth, async (req, res) => {
+    const result = await pool.query(
+        'DELETE FROM sticky_notes WHERE id = $1 AND user_id = $2 RETURNING id',
+        [req.params.id, req.user.id]
+    );
+    if (result.rows.length === 0) {
+        return res.status(404).json({ success: false, error: 'Sticky note not found.' });
+    }
+    res.json({ success: true, id: result.rows[0].id });
 });
 
 // Catch-all error handler so the frontend always gets JSON back

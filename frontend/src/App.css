@@ -297,7 +297,7 @@ h1 {
 .photo-slot {
   background-color: #23162b;
   border-radius: 4px;
-  overflow: hidden;
+  overflow: visible;
   position: relative;
 }
 
@@ -306,6 +306,7 @@ h1 {
   height: 100%;
   object-fit: cover;
   display: block;
+  border-radius: 4px;
 }
 
 /* PHOTOBOOT TEMPLATE */

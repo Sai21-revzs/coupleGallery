@@ -215,10 +215,6 @@
 /* ===================== FLOATING ADD MEMORY BUTTON ===================== */
 
 .fab-add-memory {
-  position: fixed;
-  right: 2.2rem;
-  bottom: 2.2rem;
-  z-index: 45;
   padding: 14px 28px;
   font-size: 1.2rem;
   box-shadow: 0 10px 28px rgba(155, 91, 184, 0.45);
