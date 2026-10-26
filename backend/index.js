@@ -123,6 +123,15 @@ async function initDatabase() {
     await pool.query(`
         CREATE INDEX IF NOT EXISTS idx_bucket_list_user_id ON bucket_list_items(user_id);
     `);
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS media_files (
+            file_path  TEXT PRIMARY KEY,
+            mime_type  VARCHAR(100) NOT NULL,
+            file_data  BYTEA NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    `);
 }
 
 // ===================== AUTHENTICATION HELPERS =====================
@@ -262,6 +271,59 @@ fs.mkdirSync(AVATAR_DIR, { recursive: true });
 
 // Serve saved files (express.static supports range requests, so audio seeking works)
 app.use('/uploads', express.static(UPLOADS_DIR));
+
+// Fallback: if a file is not on local disk (e.g., after a Render restart), fetch it from PostgreSQL (`media_files`),
+// restore it to disk cache so future & range requests work natively, and send it.
+app.get('/uploads/:folder/:filename', async (req, res, next) => {
+    try {
+        const { folder, filename } = req.params;
+        if (!['photos', 'music', 'avatars'].includes(folder)) {
+            return res.status(404).end();
+        }
+        const publicPath = `/uploads/${folder}/${filename}`;
+        const result = await pool.query(
+            'SELECT mime_type, file_data FROM media_files WHERE file_path = $1',
+            [publicPath]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).end();
+        }
+        const { mime_type, file_data } = result.rows[0];
+        const diskPath = toDiskPath(publicPath);
+        if (diskPath) {
+            await fs.promises.writeFile(diskPath, file_data).catch(() => {});
+            return res.sendFile(diskPath);
+        }
+        res.setHeader('Content-Type', mime_type);
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        return res.send(file_data);
+    } catch (err) {
+        next(err);
+    }
+});
+
+async function saveFileToDb(publicPath, diskPath, mimeType) {
+    const fileData = await fs.promises.readFile(diskPath);
+    await pool.query(
+        `INSERT INTO media_files (file_path, mime_type, file_data)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (file_path) DO UPDATE
+         SET mime_type = EXCLUDED.mime_type,
+             file_data = EXCLUDED.file_data`,
+        [publicPath, mimeType, fileData]
+    );
+}
+
+async function removeFilesFromDb(publicPaths) {
+    const valid = publicPaths.filter(Boolean);
+    if (valid.length === 0) return;
+    await pool.query(
+        'DELETE FROM media_files WHERE file_path = ANY($1::text[])',
+        [valid]
+    ).catch(err => {
+        console.error('Could not delete media from database:', err.message);
+    });
+}
 
 // Each layout requires an EXACT number of photos
 const LAYOUT_PHOTO_COUNT = {
@@ -537,11 +599,16 @@ app.put('/api/auth/profile', requireAuth, handleAvatarUpload, async (req, res) =
     }
 
     const newAvatarPath = uploadedAvatar ? `/uploads/avatars/${uploadedAvatar.filename}` : null;
-    const previousAvatarDiskPath = newAvatarPath && req.user.avatar_path
-        ? toDiskPath(req.user.avatar_path)
+    const previousAvatarPublicPath = newAvatarPath && req.user.avatar_path ? req.user.avatar_path : null;
+    const previousAvatarDiskPath = previousAvatarPublicPath
+        ? toDiskPath(previousAvatarPublicPath)
         : null;
 
     try {
+        if (uploadedAvatar && newAvatarPath) {
+            await saveFileToDb(newAvatarPath, uploadedAvatar.path, uploadedAvatar.mimetype);
+        }
+
         const result = await pool.query(
             `UPDATE users
              SET username = $1,
@@ -558,6 +625,9 @@ app.put('/api/auth/profile', requireAuth, handleAvatarUpload, async (req, res) =
         if (previousAvatarDiskPath) {
             await removeFiles([previousAvatarDiskPath]);
         }
+        if (previousAvatarPublicPath) {
+            await removeFilesFromDb([previousAvatarPublicPath]);
+        }
 
         res.json({
             success: true,
@@ -565,6 +635,7 @@ app.put('/api/auth/profile', requireAuth, handleAvatarUpload, async (req, res) =
         });
     } catch (err) {
         if (uploadedAvatar) await removeFiles([uploadedAvatar.path]);
+        if (newAvatarPath) await removeFilesFromDb([newAvatarPath]);
         throw err;
     }
 });
@@ -621,6 +692,13 @@ app.post('/api/memories', requireAuth, handleUpload, async (req, res) => {
     const musicName = music ? music.originalname.slice(0, 200) : null;
 
     try {
+        for (let i = 0; i < photos.length; i++) {
+            await saveFileToDb(photoPaths[i], photos[i].path, photos[i].mimetype);
+        }
+        if (music && musicPath) {
+            await saveFileToDb(musicPath, music.path, 'audio/mpeg');
+        }
+
         const result = await pool.query(
             `INSERT INTO memories (title, date, layout, photos, music_path, music_name, user_id)
              VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
@@ -629,6 +707,7 @@ app.post('/api/memories', requireAuth, handleUpload, async (req, res) => {
         res.json({ success: true, added: result.rows[0] });
     } catch (err) {
         await removeFiles(uploadedDiskPaths); // don't leave orphaned files behind
+        await removeFilesFromDb([...photoPaths, musicPath]);
         throw err;
     }
 });
@@ -642,7 +721,9 @@ app.delete('/api/memories/:id', requireAuth, async (req, res) => {
     if (!deleted) {
         return res.status(404).json({ success: false, error: 'Memory not found.' });
     }
-    await removeFiles([...(deleted.photos || []), deleted.music_path].map(toDiskPath));
+    const publicPaths = [...(deleted.photos || []), deleted.music_path];
+    await removeFiles(publicPaths.map(toDiskPath));
+    await removeFilesFromDb(publicPaths);
     res.json({ success: true, message: 'item deleted' });
 });
 
