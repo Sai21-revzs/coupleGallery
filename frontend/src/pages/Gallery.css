@@ -767,29 +767,128 @@
   font-size: 1.1rem;
 }
 
-/* ===================== RESPONSIVE ===================== */
+/* ===================== RESPONSIVE (MOBILE & TABLET) ===================== */
 
-@media (max-width: 640px) {
+/* Tablet (iPad, surface, small laptops) */
+@media (min-width: 641px) and (max-width: 1024px) {
   .navbar {
-    padding: 0.8rem 1rem;
-  }
-
-  .nav-title {
-    font-size: 1.6rem;
-  }
-
-  .nav-count,
-  .nav-user {
-    display: none;
-  }
-
-  .btn {
-    padding: 8px 16px;
-    font-size: 1rem;
+    padding: 0.8rem 1.6rem;
   }
 
   .gallery-main,
   .form-wrapper {
-    padding: 1.5rem 1rem 3rem;
+    padding: 2rem 1.5rem 3.5rem;
+  }
+
+  .memory-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 270px));
+    gap: 1.25rem;
+  }
+}
+
+/* Mobile Devices (<= 640px) */
+@media (max-width: 640px) {
+  .navbar {
+    padding: 0.65rem 0.85rem;
+    gap: 0.45rem;
+  }
+
+  .nav-title {
+    font-size: 1.45rem;
+  }
+
+  .nav-heart {
+    font-size: 1.2rem;
+  }
+
+  .nav-count,
+  .nav-username {
+    display: none;
+  }
+
+  .nav-actions {
+    gap: 0.35rem;
+  }
+
+  .nav-actions .btn {
+    padding: 6px 12px;
+    font-size: 0.92rem;
+  }
+
+  .nav-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .nav-avatar-placeholder {
+    font-size: 0.95rem;
+  }
+
+  .gallery-main,
+  .form-wrapper {
+    padding: 1.25rem 0.85rem 3rem;
+  }
+
+  .gallery-title {
+    font-size: clamp(2.3rem, 10vw, 3.2rem);
+  }
+
+  .gallery-subtitle {
+    font-size: 1.1rem;
+    margin-bottom: 1.1rem;
+  }
+
+  .memory-grid {
+    grid-template-columns: minmax(0, 310px);
+    gap: 1.4rem;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .memory-grid-item {
+    width: 100%;
+    max-width: 310px;
+  }
+
+  .enlarged-grid-backdrop {
+    padding: 0.75rem;
+  }
+
+  .enlarged-memory-card {
+    width: 100%;
+    padding: 1.2rem 0.85rem;
+    border-radius: 12px;
+  }
+
+  .enlarged-card-text h3 {
+    font-size: 1.7rem !important;
+  }
+
+  .enlarged-card-text p {
+    font-size: 0.95rem !important;
+  }
+}
+
+/* Extra small phones (<= 380px) */
+@media (max-width: 380px) {
+  .navbar {
+    padding: 0.55rem 0.6rem;
+  }
+
+  .nav-title {
+    font-size: 1.3rem;
+  }
+
+  .nav-actions .btn-ghost {
+    padding: 5px 9px;
+    font-size: 0.85rem;
+  }
+
+  .memory-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gallery-main {
+    padding: 1rem 0.5rem 3rem;
   }
 }

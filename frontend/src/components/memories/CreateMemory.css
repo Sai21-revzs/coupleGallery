@@ -589,3 +589,43 @@
 .cm-cancel:hover {
   color: #5a2a6b;
 }
+
+/* ===================== RESPONSIVE (MOBILE & TABLET) ===================== */
+
+@media (max-width: 640px) {
+  .create-memory h2 {
+    font-size: 2.3rem;
+  }
+
+  .cm-section {
+    padding: 0.85rem 0.95rem;
+    gap: 0.65rem;
+    border-radius: 14px;
+  }
+
+  .cm-step {
+    font-size: 1.12rem;
+  }
+
+  .layout-options {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.55rem;
+  }
+
+  .layout-option {
+    padding: 0.6rem 0.4rem;
+  }
+
+  .layout-option span {
+    font-size: 0.88rem;
+  }
+
+  .upload-grid {
+    max-width: 100%;
+    padding: 8px;
+  }
+
+  .upload-header {
+    flex-wrap: wrap;
+  }
+}

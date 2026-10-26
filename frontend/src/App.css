@@ -283,9 +283,10 @@ h1 {
 /* PHOTOB BASE CSS */
 
 .card-base {
-  width: 260px;
+  width: 100%;
+  max-width: 270px;
   padding: 0.9rem;
-  margin: 0;
+  margin: 0 auto;
   box-sizing: border-box;
   background-color: #111;
   /* Dark theme for all */
