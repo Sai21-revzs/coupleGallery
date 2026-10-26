@@ -35,17 +35,6 @@ function PhotoSlotWithNotes({
         });
     };
 
-    const handleQuickAdd = (e) => {
-        e.stopPropagation();
-        const offset = (notes.length % 4) * 6;
-        onCreateNote({
-            memory_id: memoryId,
-            photo_index: photoIndex,
-            pos_x: Math.min(82, 46 + offset),
-            pos_y: Math.min(80, 44 + offset),
-        });
-    };
-
     return (
         <div
             ref={slotRef}
@@ -57,15 +46,6 @@ function PhotoSlotWithNotes({
                 alt={`${title} - photo ${photoIndex + 1}`}
                 loading="lazy"
             />
-
-            <button
-                type="button"
-                className="photo-add-note-btn"
-                onClick={handleQuickAdd}
-                title="Add a sticky note on this picture"
-            >
-                📌 + Note
-            </button>
 
             {notes.map((note) => (
                 <StickyNote

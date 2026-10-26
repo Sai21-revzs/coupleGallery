@@ -10,10 +10,15 @@
     0 2px 6px rgba(0, 0, 0, 0.12);
   font-family: 'Cormorant Garamond', 'Segoe UI', serif;
   color: #3d2449;
-  transition: box-shadow 0.2s ease, background-color 0.25s ease, border-color 0.25s ease;
+  transition: box-shadow 0.2s ease, background-color 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
   user-select: none;
   z-index: 30;
+  cursor: grab;
   animation: stickyPopIn 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
+}
+
+.sticky-note:active {
+  cursor: grabbing;
 }
 
 @keyframes stickyPopIn {
@@ -28,7 +33,8 @@
 }
 
 .sticky-note:hover,
-.sticky-note:focus-within {
+.sticky-note.is-selected,
+.sticky-note.is-editing {
   z-index: 38;
   box-shadow:
     0 14px 30px rgba(90, 42, 107, 0.3),
@@ -46,7 +52,7 @@
 /* Page-level sticky note size */
 .sticky-note-page {
   width: 215px;
-  min-height: 155px;
+  min-height: 150px;
   padding: 8px 11px 11px;
   transform: rotate(-1.2deg);
 }
@@ -56,7 +62,8 @@
 }
 
 .sticky-note-page:hover,
-.sticky-note-page:focus-within,
+.sticky-note-page.is-selected,
+.sticky-note-page.is-editing,
 .sticky-note-page.is-dragging {
   transform: rotate(0deg) scale(1.02);
 }
@@ -64,7 +71,7 @@
 /* Picture-level sticky note size (inside a photo slot) */
 .sticky-note-photo {
   width: 148px;
-  min-height: 88px;
+  min-height: 86px;
   padding: 5px 8px 8px;
   border-radius: 8px;
   z-index: 6;
@@ -103,15 +110,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 5px;
-  padding-bottom: 5px;
+  padding-bottom: 4px;
   margin-bottom: 5px;
   border-bottom: 1px dashed rgba(90, 42, 107, 0.16);
-  cursor: grab;
   touch-action: none;
-}
-
-.sticky-note-header:active {
-  cursor: grabbing;
 }
 
 .sticky-pin {
@@ -124,10 +126,12 @@
   font-size: 0.72rem;
 }
 
+/* Swatches only render when the note is clicked/selected */
 .sticky-swatches {
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  animation: stickyPopIn 0.18s ease both;
 }
 
 .sticky-note-photo .sticky-swatches {
@@ -175,14 +179,22 @@
   background-color: #ffec99;
 }
 
-.sticky-delete-btn {
-  width: 20px;
-  height: 20px;
+/* Edit, Save, and Delete buttons in note header */
+.sticky-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.sticky-action-btn {
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   border: none;
-  background: rgba(90, 42, 107, 0.1);
+  background: rgba(90, 42, 107, 0.12);
   color: #5a2a6b;
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
   display: inline-flex;
@@ -192,10 +204,26 @@
   transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
 }
 
-.sticky-note-photo .sticky-delete-btn {
-  width: 17px;
-  height: 17px;
-  font-size: 0.62rem;
+.sticky-note-photo .sticky-action-btn {
+  width: 18px;
+  height: 18px;
+  font-size: 0.68rem;
+}
+
+.sticky-edit-btn:hover {
+  background: #9b5bb8;
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.sticky-save-btn {
+  background: #2e9e67;
+  color: #fff;
+}
+
+.sticky-save-btn:hover {
+  background: #237d50;
+  transform: scale(1.1);
 }
 
 .sticky-delete-btn:hover {
@@ -204,15 +232,11 @@
   transform: scale(1.1);
 }
 
-/* ===================== STICKY NOTE TEXTAREA ===================== */
+/* ===================== STICKY NOTE BODY (LOCKED vs EDITING) ===================== */
 
-.sticky-note-textarea {
+.sticky-note-content {
   width: 100%;
   flex: 1;
-  border: none;
-  outline: none;
-  background: transparent;
-  resize: none;
   font-family: 'Cormorant Garamond', 'Segoe UI', serif;
   font-size: 1.08rem;
   font-weight: 600;
@@ -220,7 +244,43 @@
   color: #3a2047;
   padding: 2px;
   box-sizing: border-box;
+  white-space: pre-wrap;
+  word-break: break-word;
+  cursor: grab;
+}
+
+.sticky-note-content:active {
+  cursor: grabbing;
+}
+
+.sticky-note-photo .sticky-note-content {
+  font-size: 0.88rem;
+  line-height: 1.22;
+}
+
+.sticky-note-placeholder {
+  color: rgba(90, 42, 107, 0.48);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.sticky-note-textarea {
+  width: 100%;
+  flex: 1;
+  border: 1px dashed rgba(90, 42, 107, 0.35);
+  border-radius: 6px;
+  outline: none;
+  background: rgba(255, 255, 255, 0.45);
+  resize: none;
+  font-family: 'Cormorant Garamond', 'Segoe UI', serif;
+  font-size: 1.08rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #3a2047;
+  padding: 4px 6px;
+  box-sizing: border-box;
   user-select: text;
+  cursor: text;
 }
 
 .sticky-note-textarea::placeholder {
@@ -234,7 +294,7 @@
   line-height: 1.22;
 }
 
-/* ===================== PHOTO SLOT STICKY CONTROLS ===================== */
+/* ===================== PHOTO SLOT PLACEMENT TARGET ===================== */
 
 .photo-slot.sticky-placement-target {
   cursor: crosshair;
@@ -246,127 +306,124 @@
   outline-color: #ff8fb8;
 }
 
-.photo-add-note-btn {
-  position: absolute;
-  bottom: 7px;
-  right: 7px;
-  z-index: 5;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 9px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  background: rgba(255, 247, 194, 0.92);
-  color: #4b2359;
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 0.82rem;
-  font-weight: 700;
-  cursor: pointer;
-  opacity: 0;
-  transform: translateY(4px);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.28);
-  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease;
-}
+/* ===================== SINGLE HEART + PLUS RADIAL FAB ===================== */
 
-.photo-slot:hover .photo-add-note-btn,
-.photo-add-note-btn:focus-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.photo-add-note-btn:hover {
-  background: #ffe4ef;
-  transform: scale(1.06);
-}
-
-@media (hover: none) {
-  .photo-add-note-btn {
-    opacity: 0.92;
-    transform: none;
-  }
-}
-
-/* ===================== FLOATING STICKY DOCK & BANNER ===================== */
-
-.floating-actions-dock {
+.heart-fab-wrapper {
   position: fixed;
   right: 2.2rem;
   bottom: 2.2rem;
-  z-index: 45;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.85rem;
-}
-
-.sticky-dock-panel {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.55rem;
-}
-
-.sticky-dock-palette {
+  z-index: 46;
+  width: 68px;
+  height: 68px;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 8px 13px;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1.5px solid rgba(155, 91, 184, 0.35);
-  border-radius: 999px;
-  box-shadow: 0 8px 24px rgba(90, 42, 107, 0.22);
-  animation: stickyPopIn 0.2s ease both;
+  justify-content: center;
 }
 
-.sticky-dock-label {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #5a2a6b;
-  margin-right: 2px;
-}
-
-.sticky-dock-swatch {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 2px solid rgba(90, 42, 107, 0.3);
-  cursor: pointer;
+.heart-plus-fab {
+  position: relative;
+  z-index: 2;
+  width: 68px;
+  height: 64px;
   padding: 0;
-  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 8px 20px rgba(155, 91, 184, 0.48));
+  transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.2), filter 0.3s ease;
+  animation: fabFloat 3s ease-in-out infinite;
 }
 
-.sticky-dock-swatch:hover {
-  transform: scale(1.15);
+.heart-plus-fab:hover {
+  animation-play-state: paused;
+  transform: scale(1.08);
+  filter: drop-shadow(0 12px 26px rgba(232, 106, 154, 0.65));
 }
 
-.sticky-dock-swatch.active {
-  border-color: #5a2a6b;
-  box-shadow: 0 0 0 3px rgba(232, 106, 154, 0.32);
-  transform: scale(1.15);
+.heart-fab-wrapper.open .heart-plus-fab,
+.heart-plus-fab.active {
+  animation-play-state: paused;
+  transform: scale(1.06);
 }
 
-.fab-sticky-note {
-  padding: 12px 22px;
-  font-size: 1.12rem;
-  color: #4b2359;
-  background: linear-gradient(135deg, #fff7c2 0%, #ffd6e8 55%, #e9d4ff 100%);
-  border: 1.5px solid rgba(255, 255, 255, 0.9);
-  box-shadow: 0 8px 24px rgba(155, 91, 184, 0.35);
+.heart-plus-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
 }
 
-.fab-sticky-note:hover {
-  transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 12px 28px rgba(232, 106, 154, 0.45);
+.heart-plus-cross {
+  transform-origin: 32px 26px;
+  transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.2);
 }
 
-.fab-sticky-note.active {
+.heart-fab-wrapper.open .heart-plus-cross {
+  transform: rotate(45deg);
+}
+
+/* Radial option buttons that fan out around the heart button (top & left, like the sketch) */
+.heart-radial-item {
+  position: absolute;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #5a2a6b;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(90, 42, 107, 0.24);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(0, 0) scale(0.5);
+  transition:
+    transform 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.25),
+    opacity 0.22s ease,
+    background 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.radial-icon {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+/* "Add Memory" pops out above the heart button */
+.heart-fab-wrapper.open .radial-add-memory {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-18px, -74px) scale(1);
+}
+
+/* "Sticky Note" pops out to the left of the heart button */
+.heart-fab-wrapper.open .radial-add-sticky {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-118px, -12px) scale(1);
+}
+
+.heart-radial-item:hover {
   background: linear-gradient(135deg, #e86a9a, #9b5bb8);
   color: #fff;
-  box-shadow: 0 10px 28px rgba(232, 106, 154, 0.55);
+  box-shadow: 0 10px 26px rgba(232, 106, 154, 0.45);
+}
+
+.radial-add-sticky.active {
+  background: linear-gradient(135deg, #fff7c2, #ffd6e8);
+  color: #4b2359;
+  border-color: #e86a9a;
 }
 
 /* Placement mode helper banner at top of gallery */
@@ -416,9 +473,9 @@
 }
 
 @media (max-width: 640px) {
-  .floating-actions-dock {
-    right: 1rem;
-    bottom: 1rem;
+  .heart-fab-wrapper {
+    right: 1.2rem;
+    bottom: 1.2rem;
   }
 
   .sticky-placement-banner {

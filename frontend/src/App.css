@@ -283,9 +283,10 @@ h1 {
 /* PHOTOB BASE CSS */
 
 .card-base {
-  width: 250px;
-  padding: 1rem;
-  margin: 1rem;
+  width: 260px;
+  padding: 0.9rem;
+  margin: 0;
+  box-sizing: border-box;
   background-color: #111;
   /* Dark theme for all */
   color: white;
@@ -313,8 +314,8 @@ h1 {
 
 .photo-grid {
   display: grid;
-  gap: 10px;
-  margin-bottom: 0.9rem;
+  gap: 6px;
+  margin-bottom: 0.75rem;
 }
 
 /* Layout 1 (Solo / 1 Pose): 1 column, tall photo */

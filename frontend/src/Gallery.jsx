@@ -1,9 +1,9 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import MemoryCard from './MemoryCard';
 import CreateMemory from './createMemory';
 import Navbar from './Navbar';
-import StickyNote, { STICKY_COLORS } from './StickyNote';
+import StickyNote from './StickyNote';
 import { API_URL } from './constants';
 import './Gallery.css';
 
@@ -21,17 +21,30 @@ function Gallery({
 }) {
     const [showForm, openForm] = useState(false);
     const [search, setSearch] = useState('');
+    const [fabMenuOpen, setFabMenuOpen] = useState(false);
     const [placingNote, setPlacingNote] = useState(false);
-    const [selectedNoteColor, setSelectedNoteColor] = useState('yellow');
     const [newNoteId, setNewNoteId] = useState(null);
 
     const galleryPageRef = useRef(null);
+    const fabMenuRef = useRef(null);
 
     const filtered = memories.filter(m =>
         (m.title || '').toLowerCase().includes(search.toLowerCase())
     );
 
     const pageNotes = notes.filter(n => n.memory_id == null);
+
+    // Close the heart radial menu when clicking outside
+    useEffect(() => {
+        if (!fabMenuOpen) return;
+        const handleOutside = (e) => {
+            if (fabMenuRef.current && !fabMenuRef.current.contains(e.target)) {
+                setFabMenuOpen(false);
+            }
+        };
+        document.addEventListener('pointerdown', handleOutside);
+        return () => document.removeEventListener('pointerdown', handleOutside);
+    }, [fabMenuOpen]);
 
     const handleCreateNote = async ({ memory_id = null, photo_index = null, pos_x = 120, pos_y = 140 }) => {
         try {
@@ -46,7 +59,7 @@ function Gallery({
                     photo_index,
                     pos_x,
                     pos_y,
-                    color: selectedNoteColor,
+                    color: 'yellow',
                     content: '',
                 }),
             });
@@ -112,10 +125,10 @@ function Gallery({
 
     const handlePageClick = (e) => {
         if (!placingNote || showForm) return;
-        // Ignore clicks on navbar, floating buttons, inputs, buttons, or existing sticky notes
+        // Ignore clicks on navbar, floating heart menu, banner, inputs, buttons, or existing sticky notes
         if (
             e.target.closest('.navbar') ||
-            e.target.closest('.floating-actions-dock') ||
+            e.target.closest('.heart-fab-wrapper') ||
             e.target.closest('.sticky-placement-banner') ||
             e.target.closest('.sticky-note') ||
             e.target.closest('button') ||
@@ -160,7 +173,7 @@ function Gallery({
 
             {placingNote && !showForm && (
                 <div className="sticky-placement-banner" role="status">
-                    <span>📌 Click anywhere on the page or inside any picture to pin your sticky note</span>
+                    <span>📌 Click anywhere on the page or inside any picture to place your sticky note</span>
                     <button
                         type="button"
                         className="sticky-banner-cancel"
@@ -260,41 +273,70 @@ function Gallery({
             ))}
 
             {!showForm && createPortal(
-                <div className="floating-actions-dock">
-                    <div className="sticky-dock-panel">
-                        <div className="sticky-dock-palette" aria-label="Choose sticky note color">
-                            <span className="sticky-dock-label">Note color:</span>
-                            {STICKY_COLORS.map((c) => (
-                                <button
-                                    key={c.id}
-                                    type="button"
-                                    className={`sticky-dock-swatch swatch-${c.id} ${selectedNoteColor === c.id ? 'active' : ''}`}
-                                    onClick={() => setSelectedNoteColor(c.id)}
-                                    title={c.label}
-                                    aria-label={c.label}
-                                />
-                            ))}
-                        </div>
-
-                        <button
-                            type="button"
-                            className={`btn fab-sticky-note ${placingNote ? 'active' : ''}`}
-                            onClick={() => setPlacingNote(prev => !prev)}
-                        >
-                            <span className="btn-icon">📌</span>
-                            {placingNote ? 'Click Page or Picture…' : '+ Sticky Note'}
-                        </button>
-                    </div>
-
+                <div
+                    ref={fabMenuRef}
+                    className={`heart-fab-wrapper ${fabMenuOpen ? 'open' : ''}`}
+                >
+                    {/* Action 1: Add Memory (appears above the heart button) */}
                     <button
                         type="button"
-                        className="btn btn-primary fab-add-memory"
+                        className="heart-radial-item radial-add-memory"
                         onClick={() => {
+                            setFabMenuOpen(false);
                             setPlacingNote(false);
                             openForm(true);
                         }}
+                        aria-label="Add Memory"
                     >
-                        <span className="btn-icon">+</span> Add Memory
+                        <span className="radial-icon">📸</span>
+                        <span className="radial-label">Add Memory</span>
+                    </button>
+
+                    {/* Action 2: Add Sticky Note (appears to the left of the heart button) */}
+                    <button
+                        type="button"
+                        className={`heart-radial-item radial-add-sticky ${placingNote ? 'active' : ''}`}
+                        onClick={() => {
+                            setFabMenuOpen(false);
+                            setPlacingNote(prev => !prev);
+                        }}
+                        aria-label="Add Sticky Note"
+                    >
+                        <span className="radial-icon">📌</span>
+                        <span className="radial-label">
+                            {placingNote ? 'Cancel Note' : 'Sticky Note'}
+                        </span>
+                    </button>
+
+                    {/* Main Single Button: Heart with Plus Icon inside */}
+                    <button
+                        type="button"
+                        className={`heart-plus-fab ${fabMenuOpen || placingNote ? 'active' : ''}`}
+                        onClick={() => setFabMenuOpen(prev => !prev)}
+                        title="Add memory or sticky note"
+                        aria-label="Add memory or sticky note"
+                        aria-expanded={fabMenuOpen}
+                    >
+                        <svg className="heart-plus-svg" viewBox="0 0 64 58" aria-hidden="true">
+                            <defs>
+                                <linearGradient id="fabHeartGrad" x1="0" y1="0" x2="1" y2="1">
+                                    <stop offset="0%" stopColor="#ff7eb3" />
+                                    <stop offset="100%" stopColor="#9b5bb8" />
+                                </linearGradient>
+                            </defs>
+                            <path
+                                className="heart-plus-shape"
+                                d="M32 54 C32 54 6 37 6 19 C6 9.5 13.5 3 22 3 C27.2 3 30.5 6 32 9.5 C33.5 6 36.8 3 42 3 C50.5 3 58 9.5 58 19 C58 37 32 54 32 54 Z"
+                                fill="url(#fabHeartGrad)"
+                                stroke="#ffffff"
+                                strokeWidth="3"
+                                strokeLinejoin="round"
+                            />
+                            <g className="heart-plus-cross">
+                                <line x1="32" y1="19" x2="32" y2="33" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
+                                <line x1="25" y1="26" x2="39" y2="26" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
+                            </g>
+                        </svg>
                     </button>
                 </div>,
                 document.body

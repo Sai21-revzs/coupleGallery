@@ -486,12 +486,16 @@
 
 .memory-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-  gap: 2.2rem;
-  justify-items: center;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 265px));
+  gap: 1.25rem;
+  justify-content: center;
+  align-items: start;
 }
 
 .memory-grid-item {
+  width: 100%;
+  display: flex;
+  justify-content: center;
   animation: cardIn 0.6s ease both;
 }
 
@@ -509,24 +513,18 @@
 
 .memory-card {
   position: relative;
+  width: 100%;
+  box-sizing: border-box;
   margin: 0;
-  border-radius: 6px;
+  border-radius: 8px;
   background: linear-gradient(180deg, #1c1420, #0f0b12);
-  box-shadow: 0 12px 30px rgba(60, 20, 70, 0.25);
-  transition: transform 0.35s ease, box-shadow 0.35s ease;
-}
-
-.memory-grid-item:nth-child(odd) .memory-card {
-  transform: rotate(-1.5deg);
-}
-
-.memory-grid-item:nth-child(even) .memory-card {
-  transform: rotate(1.5deg);
+  box-shadow: 0 10px 26px rgba(60, 20, 70, 0.24);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .memory-grid-item .memory-card:hover {
-  transform: translateY(-8px) rotate(0deg) scale(1.03);
-  box-shadow: 0 20px 40px rgba(232, 106, 154, 0.35);
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 18px 36px rgba(232, 106, 154, 0.35);
 }
 
 .memory-card .card-text h3 {
