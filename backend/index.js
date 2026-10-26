@@ -11,6 +11,10 @@ const app = express();
 app.use(cors()); // Let our React frontend talk to us
 app.use(express.json()); // Let our server read JSON data sent from forms
 
+app.get('/', (req, res) => {
+    res.json({ status: 'ok', message: 'CoupleGallery API is running' });
+});
+
 
 const pool = require('./db');
 

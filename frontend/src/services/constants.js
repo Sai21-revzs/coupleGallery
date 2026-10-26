@@ -1,6 +1,6 @@
 // Shared settings for the memory gallery
 
-export const API_URL = 'http://localhost:5000';
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 // The four photo layouts. `value` matches what is stored in the database.
 export const LAYOUTS = [
