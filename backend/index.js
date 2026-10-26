@@ -87,6 +87,21 @@ async function initDatabase() {
     await pool.query(`
         CREATE INDEX IF NOT EXISTS idx_sticky_notes_memory_id ON sticky_notes(memory_id);
     `);
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS bucket_list_items (
+            id          SERIAL PRIMARY KEY,
+            user_id     INTEGER REFERENCES users(id) ON DELETE CASCADE,
+            content     TEXT NOT NULL DEFAULT '',
+            is_done     BOOLEAN NOT NULL DEFAULT FALSE,
+            created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    `);
+
+    await pool.query(`
+        CREATE INDEX IF NOT EXISTS idx_bucket_list_user_id ON bucket_list_items(user_id);
+    `);
 }
 
 // ===================== AUTHENTICATION HELPERS =====================
@@ -670,6 +685,62 @@ app.delete('/api/notes/:id', requireAuth, async (req, res) => {
     );
     if (result.rows.length === 0) {
         return res.status(404).json({ success: false, error: 'Sticky note not found.' });
+    }
+    res.json({ success: true, id: result.rows[0].id });
+});
+
+// ===================== BUCKET LIST ROUTES =====================
+
+app.get('/api/bucket-list', requireAuth, async (req, res) => {
+    const result = await pool.query(
+        'SELECT * FROM bucket_list_items WHERE user_id = $1 ORDER BY created_at ASC, id ASC',
+        [req.user.id]
+    );
+    res.json(result.rows);
+});
+
+app.post('/api/bucket-list', requireAuth, async (req, res) => {
+    const content = typeof req.body?.content === 'string' ? req.body.content.slice(0, 1000) : '';
+    const isDone = Boolean(req.body?.is_done);
+
+    const result = await pool.query(
+        `INSERT INTO bucket_list_items (user_id, content, is_done)
+         VALUES ($1, $2, $3) RETURNING *`,
+        [req.user.id, content, isDone]
+    );
+    res.status(201).json({ success: true, item: result.rows[0] });
+});
+
+app.put('/api/bucket-list/:id', requireAuth, async (req, res) => {
+    const existing = await pool.query(
+        'SELECT * FROM bucket_list_items WHERE id = $1 AND user_id = $2',
+        [req.params.id, req.user.id]
+    );
+    const current = existing.rows[0];
+    if (!current) {
+        return res.status(404).json({ success: false, error: 'Bucket list item not found.' });
+    }
+
+    const content = typeof req.body?.content === 'string' ? req.body.content.slice(0, 1000) : current.content;
+    const isDone = typeof req.body?.is_done === 'boolean' ? req.body.is_done : current.is_done;
+
+    const result = await pool.query(
+        `UPDATE bucket_list_items
+         SET content = $1, is_done = $2, updated_at = CURRENT_TIMESTAMP
+         WHERE id = $3 AND user_id = $4
+         RETURNING *`,
+        [content, isDone, req.params.id, req.user.id]
+    );
+    res.json({ success: true, item: result.rows[0] });
+});
+
+app.delete('/api/bucket-list/:id', requireAuth, async (req, res) => {
+    const result = await pool.query(
+        'DELETE FROM bucket_list_items WHERE id = $1 AND user_id = $2 RETURNING id',
+        [req.params.id, req.user.id]
+    );
+    if (result.rows.length === 0) {
+        return res.status(404).json({ success: false, error: 'Bucket list item not found.' });
     }
     res.json({ success: true, id: result.rows[0].id });
 });

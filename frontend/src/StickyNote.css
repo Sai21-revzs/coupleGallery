@@ -404,14 +404,21 @@
 .heart-fab-wrapper.open .radial-add-memory {
   opacity: 1;
   pointer-events: auto;
-  transform: translate(-18px, -74px) scale(1);
+  transform: translate(-18px, -116px) scale(1);
+}
+
+/* "Bucket List" pops out diagonally top-left of the heart button */
+.heart-fab-wrapper.open .radial-bucket-list {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-106px, -64px) scale(1);
 }
 
 /* "Sticky Note" pops out to the left of the heart button */
 .heart-fab-wrapper.open .radial-add-sticky {
   opacity: 1;
   pointer-events: auto;
-  transform: translate(-118px, -12px) scale(1);
+  transform: translate(-122px, -6px) scale(1);
 }
 
 .heart-radial-item:hover {
@@ -420,7 +427,8 @@
   box-shadow: 0 10px 26px rgba(232, 106, 154, 0.45);
 }
 
-.radial-add-sticky.active {
+.radial-add-sticky.active,
+.radial-bucket-list.active {
   background: linear-gradient(135deg, #fff7c2, #ffd6e8);
   color: #4b2359;
   border-color: #e86a9a;

@@ -37,6 +37,7 @@ function App() {
 
   const [memories, setMemories] = useState([]);
   const [notes, setNotes] = useState([]);
+  const [bucketItems, setBucketItems] = useState([]);
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
@@ -45,6 +46,7 @@ function App() {
     setUser(null);
     setMemories([]);
     setNotes([]);
+    setBucketItems([]);
     setShowGallery(false);
     setLeaving(false);
   }, []);
@@ -67,6 +69,7 @@ function App() {
     if (!token) {
       setMemories([]);
       setNotes([]);
+      setBucketItems([]);
       return;
     }
 
@@ -114,6 +117,23 @@ function App() {
         }
       })
       .catch(err => console.error('Could not fetch sticky notes:', err));
+
+    fetch(`${API_URL}/api/bucket-list`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(async response => {
+        if (response.status === 401) {
+          handleLogout();
+          return null;
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (Array.isArray(data)) {
+          setBucketItems(data);
+        }
+      })
+      .catch(err => console.error('Could not fetch bucket list:', err));
   }, [token, handleLogout, handleUpdateUser]);
 
 
@@ -157,6 +177,8 @@ function App() {
           deleteMemory={deleteMemory}
           notes={notes}
           setNotes={setNotes}
+          bucketItems={bucketItems}
+          setBucketItems={setBucketItems}
           token={token}
           user={user}
           onUpdateUser={handleUpdateUser}

@@ -4,6 +4,7 @@ import MemoryCard from './MemoryCard';
 import CreateMemory from './createMemory';
 import Navbar from './Navbar';
 import StickyNote from './StickyNote';
+import BucketList from './BucketList';
 import { API_URL } from './constants';
 import './Gallery.css';
 
@@ -13,6 +14,8 @@ function Gallery({
     deleteMemory,
     notes = [],
     setNotes,
+    bucketItems = [],
+    setBucketItems,
     onHome,
     token,
     user,
@@ -24,6 +27,8 @@ function Gallery({
     const [fabMenuOpen, setFabMenuOpen] = useState(false);
     const [placingNote, setPlacingNote] = useState(false);
     const [newNoteId, setNewNoteId] = useState(null);
+    const [showBucketList, setShowBucketList] = useState(false);
+    const [newestBucketId, setNewestBucketId] = useState(null);
 
     const galleryPageRef = useRef(null);
     const fabMenuRef = useRef(null);
@@ -45,6 +50,8 @@ function Gallery({
         document.addEventListener('pointerdown', handleOutside);
         return () => document.removeEventListener('pointerdown', handleOutside);
     }, [fabMenuOpen]);
+
+    // ===================== STICKY NOTE HANDLERS =====================
 
     const handleCreateNote = async ({ memory_id = null, photo_index = null, pos_x = 120, pos_y = 140 }) => {
         try {
@@ -123,16 +130,99 @@ function Gallery({
         }
     };
 
+    // ===================== BUCKET LIST HANDLERS =====================
+
+    const handleAddBucketItem = async () => {
+        try {
+            const response = await fetch(`${API_URL}/api/bucket-list`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ content: '', is_done: false }),
+            });
+            if (response.status === 401) {
+                if (onLogout) onLogout();
+                return;
+            }
+            const data = await response.json();
+            if (data.success && data.item) {
+                setBucketItems(prev => [...prev, data.item]);
+                setNewestBucketId(data.item.id);
+                setShowBucketList(true);
+            }
+        } catch (err) {
+            console.error('Could not add bucket list item:', err);
+        }
+    };
+
+    const handleUpdateBucketItem = async (id, updates) => {
+        setBucketItems(prev =>
+            prev.map(item => (item.id === id ? { ...item, ...updates } : item))
+        );
+        try {
+            const response = await fetch(`${API_URL}/api/bucket-list/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(updates),
+            });
+            if (response.status === 401) {
+                if (onLogout) onLogout();
+                return;
+            }
+            const data = await response.json();
+            if (data.success && data.item) {
+                setBucketItems(prev =>
+                    prev.map(item => (item.id === id ? data.item : item))
+                );
+            }
+        } catch (err) {
+            console.error('Could not update bucket list item:', err);
+        }
+    };
+
+    const handleDeleteBucketItem = async (id) => {
+        setBucketItems(prev => prev.filter(item => item.id !== id));
+        try {
+            const response = await fetch(`${API_URL}/api/bucket-list/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            if (response.status === 401 && onLogout) {
+                onLogout();
+            }
+        } catch (err) {
+            console.error('Could not delete bucket list item:', err);
+        }
+    };
+
+    const handleOpenBucketListFromFab = async () => {
+        setFabMenuOpen(false);
+        setPlacingNote(false);
+        setShowBucketList(true);
+        if (bucketItems.length === 0) {
+            await handleAddBucketItem();
+        }
+    };
+
     const handlePageClick = (e) => {
         if (!placingNote || showForm) return;
-        // Ignore clicks on navbar, floating heart menu, banner, inputs, buttons, or existing sticky notes
+        // Ignore clicks on navbar, floating heart menu, banner, bucket list, inputs, buttons, or existing sticky notes
         if (
             e.target.closest('.navbar') ||
             e.target.closest('.heart-fab-wrapper') ||
             e.target.closest('.sticky-placement-banner') ||
+            e.target.closest('.bucket-list-section') ||
             e.target.closest('.sticky-note') ||
             e.target.closest('button') ||
-            e.target.closest('input')
+            e.target.closest('input') ||
+            e.target.closest('textarea')
         ) {
             return;
         }
@@ -272,12 +362,24 @@ function Gallery({
                 />
             ))}
 
+            {/* Bucket List Popup Modal */}
+            {showBucketList && (
+                <BucketList
+                    items={bucketItems}
+                    onAdd={handleAddBucketItem}
+                    onUpdate={handleUpdateBucketItem}
+                    onDelete={handleDeleteBucketItem}
+                    onClose={() => setShowBucketList(false)}
+                    newestItemId={newestBucketId}
+                />
+            )}
+
             {!showForm && createPortal(
                 <div
                     ref={fabMenuRef}
                     className={`heart-fab-wrapper ${fabMenuOpen ? 'open' : ''}`}
                 >
-                    {/* Action 1: Add Memory (appears above the heart button) */}
+                    {/* Action 1: Add Memory (above the heart button) */}
                     <button
                         type="button"
                         className="heart-radial-item radial-add-memory"
@@ -292,7 +394,18 @@ function Gallery({
                         <span className="radial-label">Add Memory</span>
                     </button>
 
-                    {/* Action 2: Add Sticky Note (appears to the left of the heart button) */}
+                    {/* Action 2: Bucket List (diagonal top-left of the heart button) */}
+                    <button
+                        type="button"
+                        className={`heart-radial-item radial-bucket-list ${showBucketList ? 'active' : ''}`}
+                        onClick={handleOpenBucketListFromFab}
+                        aria-label="Bucket List"
+                    >
+                        <span className="radial-icon">✨</span>
+                        <span className="radial-label">Bucket List</span>
+                    </button>
+
+                    {/* Action 3: Sticky Note (to the left of the heart button) */}
                     <button
                         type="button"
                         className={`heart-radial-item radial-add-sticky ${placingNote ? 'active' : ''}`}
@@ -313,8 +426,8 @@ function Gallery({
                         type="button"
                         className={`heart-plus-fab ${fabMenuOpen || placingNote ? 'active' : ''}`}
                         onClick={() => setFabMenuOpen(prev => !prev)}
-                        title="Add memory or sticky note"
-                        aria-label="Add memory or sticky note"
+                        title="Add memory, bucket list, or sticky note"
+                        aria-label="Add memory, bucket list, or sticky note"
                         aria-expanded={fabMenuOpen}
                     >
                         <svg className="heart-plus-svg" viewBox="0 0 64 58" aria-hidden="true">
