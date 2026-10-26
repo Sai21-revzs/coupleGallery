@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import MemoryCard from './MemoryCard';
-import CreateMemory from './createMemory';
-import Navbar from './Navbar';
-import StickyNote from './StickyNote';
-import BucketList from './BucketList';
-import { API_URL } from './constants';
+import MemoryCard from '../components/memories/MemoryCard';
+import CreateMemory from '../components/memories/createMemory';
+import Navbar from '../components/common/Navbar';
+import CoupleBanner from '../components/common/CoupleBanner';
+import StickyNote from '../components/sticky-notes/StickyNote';
+import BucketList from '../components/bucket-list/BucketList';
+import { API_URL } from '../services/constants';
 import './Gallery.css';
 
 function Gallery({
@@ -302,6 +303,13 @@ function Gallery({
                             />
                         </div>
                     </header>
+
+                    {/* Days Together & Quote for the Day */}
+                    <CoupleBanner
+                        user={user}
+                        token={token}
+                        onUpdateUser={onUpdateUser}
+                    />
 
                     {filtered.length === 0 ? (
                         <div className="empty-state">

@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { mediaUrl } from './constants';
-import MusicPlayer from './MusicPlayer';
-import StickyNote from './StickyNote';
+import { mediaUrl } from '../../services/constants';
+import MusicPlayer from '../common/MusicPlayer';
+import StickyNote from '../sticky-notes/StickyNote';
 
 function PhotoSlotWithNotes({
     photo,

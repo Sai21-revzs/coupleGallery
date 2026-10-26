@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { API_URL, mediaUrl } from './constants';
+import { API_URL, mediaUrl } from '../../services/constants';
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.webp'];
@@ -7,6 +7,7 @@ const IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.webp'];
 function Navbar({ count, onHome, user, token, onUpdateUser, onLogout }) {
     const [editing, setEditing] = useState(false);
     const [nameInput, setNameInput] = useState('');
+    const [relDateInput, setRelDateInput] = useState('');
     const [avatarFile, setAvatarFile] = useState(null);
     const [avatarPreview, setAvatarPreview] = useState('');
     const [error, setError] = useState('');
@@ -24,6 +25,7 @@ function Navbar({ count, onHome, user, token, onUpdateUser, onLogout }) {
 
     const openEditModal = () => {
         setNameInput(displayName);
+        setRelDateInput(user?.relationship_date || '');
         if (avatarPreview) URL.revokeObjectURL(avatarPreview);
         setAvatarFile(null);
         setAvatarPreview('');
@@ -71,6 +73,9 @@ function Navbar({ count, onHome, user, token, onUpdateUser, onLogout }) {
 
         const formData = new FormData();
         formData.append('username', trimmed);
+        if (relDateInput) {
+            formData.append('relationship_date', relDateInput);
+        }
         if (avatarFile) {
             formData.append('avatar', avatarFile);
         }
@@ -191,6 +196,18 @@ function Navbar({ count, onHome, user, token, onUpdateUser, onLogout }) {
                                     maxLength={100}
                                     placeholder="Your name"
                                     onChange={(e) => setNameInput(e.target.value)}
+                                    disabled={saving}
+                                />
+                            </div>
+
+                            <div className="profile-field">
+                                <label htmlFor="profile-date-input">Relationship Start Date</label>
+                                <input
+                                    id="profile-date-input"
+                                    type="date"
+                                    value={relDateInput}
+                                    max={new Date().toISOString().slice(0, 10)}
+                                    onChange={(e) => setRelDateInput(e.target.value)}
                                     disabled={saving}
                                 />
                             </div>

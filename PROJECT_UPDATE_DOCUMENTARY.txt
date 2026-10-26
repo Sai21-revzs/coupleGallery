@@ -191,3 +191,40 @@ purple, yellow), drag-and-drop repositioning, and PostgreSQL persistence.
   `color`, `pos_x`, `pos_y`, `created_at`, `updated_at`.
 - REST endpoints: `GET /api/notes`, `POST /api/notes`, `PUT /api/notes/:id`,
   and `DELETE /api/notes/:id`.
+
+================================================================================
+🎬 Phase 9: File Architecture Reorganization, Days Together & Daily Quote
+================================================================================
+
+THE MISSION:
+1. Reorganize project files into dedicated, modular folders for clean maintainability.
+2. Add a "Days Together" relationship anniversary tracker.
+3. Add a "Quote for the Day" where users can manually enter today's sweet message,
+   which automatically resets to empty the next day.
+
+--------------------------------------------------------------------------------
+1. CODEBASE REORGANIZATION
+--------------------------------------------------------------------------------
+Reorganized `frontend/src/` into logical subdirectories:
+- `components/auth/`: AuthPage.jsx, AuthPage.css
+- `components/bucket-list/`: BucketList.jsx, BucketList.css
+- `components/common/`: Navbar.jsx, MusicPlayer.jsx, MusicPlayer.css, CoupleBanner.jsx, CoupleBanner.css
+- `components/memories/`: createMemory.jsx, CreateMemory.css, MemoryCard.jsx
+- `components/sticky-notes/`: StickyNote.jsx, StickyNote.css
+- `pages/`: Gallery.jsx, Gallery.css
+- `services/`: constants.js
+
+--------------------------------------------------------------------------------
+2. DAYS TOGETHER COUNTER
+--------------------------------------------------------------------------------
+- Displays total days together (e.g., "524 Days Together") with a romantic sparkle badge.
+- Users can set or change their anniversary start date directly in the banner or via the Edit Profile modal.
+- Automatically calculates live count up to today.
+
+--------------------------------------------------------------------------------
+3. QUOTE FOR THE DAY (AUTO-RESETS NEXT DAY)
+--------------------------------------------------------------------------------
+- Allows the user to manually write today's quote, inside joke, or love note.
+- Indexed by date in PostgreSQL (`daily_quotes` table with `quote_date`).
+- Automatically queries today's local date (`YYYY-MM-DD`). When the calendar rolls over to the next day, today's quote starts empty, ready for a new note!
+- Users can click on it at any time to edit or update today's quote.

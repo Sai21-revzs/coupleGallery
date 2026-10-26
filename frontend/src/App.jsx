@@ -1,8 +1,8 @@
 import './App.css';
 import { useState, useEffect, useCallback } from 'react';
-import Gallery from './Gallery';
-import AuthPage from './AuthPage';
-import { API_URL } from './constants';
+import Gallery from './pages/Gallery';
+import AuthPage from './components/auth/AuthPage';
+import { API_URL } from './services/constants';
 
 const TOKEN_KEY = 'memory_auth_token';
 const USER_KEY = 'memory_auth_user';

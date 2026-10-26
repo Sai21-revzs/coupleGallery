@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { API_URL } from './constants';
+import { API_URL } from '../../services/constants';
 import './AuthPage.css';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

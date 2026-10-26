@@ -31,13 +31,30 @@ async function initDatabase() {
     await pool.query(`
         ALTER TABLE users
             ADD COLUMN IF NOT EXISTS username VARCHAR(100),
-            ADD COLUMN IF NOT EXISTS avatar_path TEXT;
+            ADD COLUMN IF NOT EXISTS avatar_path TEXT,
+            ADD COLUMN IF NOT EXISTS relationship_date DATE;
     `);
 
     await pool.query(`
         UPDATE users
         SET username = SPLIT_PART(email, '@', 1)
         WHERE username IS NULL OR BTRIM(username) = '';
+    `);
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS daily_quotes (
+            id         SERIAL PRIMARY KEY,
+            user_id    INTEGER REFERENCES users(id) ON DELETE CASCADE,
+            quote_text TEXT NOT NULL DEFAULT '',
+            quote_date DATE NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT uq_daily_quotes_user_date UNIQUE (user_id, quote_date)
+        );
+    `);
+
+    await pool.query(`
+        CREATE INDEX IF NOT EXISTS idx_daily_quotes_user_date ON daily_quotes(user_id, quote_date);
     `);
 
     await pool.query(`
@@ -183,11 +200,20 @@ function verifyToken(token) {
 }
 
 function formatUser(row) {
+    let relDateStr = null;
+    if (row.relationship_date) {
+        if (row.relationship_date instanceof Date) {
+            relDateStr = row.relationship_date.toISOString().slice(0, 10);
+        } else if (typeof row.relationship_date === 'string') {
+            relDateStr = row.relationship_date.slice(0, 10);
+        }
+    }
     return {
         id: row.id,
         username: row.username || (row.email ? row.email.split('@')[0] : 'User'),
         email: row.email,
         avatar_path: row.avatar_path || null,
+        relationship_date: relDateStr,
     };
 }
 
@@ -200,7 +226,7 @@ async function requireAuth(req, res, next) {
     }
 
     const result = await pool.query(
-        'SELECT id, username, email, avatar_path, created_at FROM users WHERE id = $1',
+        'SELECT id, username, email, avatar_path, relationship_date, created_at FROM users WHERE id = $1',
         [decoded.id]
     );
     if (result.rows.length === 0) {
@@ -480,6 +506,10 @@ app.get('/api/auth/me', requireAuth, async (req, res) => {
 app.put('/api/auth/profile', requireAuth, handleAvatarUpload, async (req, res) => {
     const uploadedAvatar = req.file || null;
     const username = (req.body?.username || '').trim();
+    const relationshipDateRaw = req.body?.relationship_date;
+    const relationshipDate = (typeof relationshipDateRaw === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(relationshipDateRaw.trim()))
+        ? relationshipDateRaw.trim()
+        : null;
 
     const reject = async (message) => {
         if (uploadedAvatar) await removeFiles([uploadedAvatar.path]);
@@ -511,10 +541,14 @@ app.put('/api/auth/profile', requireAuth, handleAvatarUpload, async (req, res) =
         const result = await pool.query(
             `UPDATE users
              SET username = $1,
-                 avatar_path = COALESCE($2, avatar_path)
+                 avatar_path = COALESCE($2, avatar_path),
+                 relationship_date = CASE
+                     WHEN $4::text IS NOT NULL AND $4::text <> '' THEN $4::date
+                     ELSE relationship_date
+                 END
              WHERE id = $3
-             RETURNING id, username, email, avatar_path`,
-            [username, newAvatarPath, req.user.id]
+             RETURNING id, username, email, avatar_path, relationship_date`,
+            [username, newAvatarPath, req.user.id, relationshipDate]
         );
 
         if (previousAvatarDiskPath) {
@@ -743,6 +777,70 @@ app.delete('/api/bucket-list/:id', requireAuth, async (req, res) => {
         return res.status(404).json({ success: false, error: 'Bucket list item not found.' });
     }
     res.json({ success: true, id: result.rows[0].id });
+});
+
+// ===================== COUPLE STATUS & DAILY QUOTE ROUTES =====================
+
+// Update relationship start date
+app.put('/api/relationship-date', requireAuth, async (req, res) => {
+    const rawDate = req.body?.date;
+    const dateStr = (typeof rawDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(rawDate.trim()))
+        ? rawDate.trim()
+        : null;
+
+    const result = await pool.query(
+        `UPDATE users
+         SET relationship_date = $1
+         WHERE id = $2
+         RETURNING id, username, email, avatar_path, relationship_date`,
+        [dateStr, req.user.id]
+    );
+
+    res.json({
+        success: true,
+        user: formatUser(result.rows[0]),
+    });
+});
+
+// Get today's quote for the user
+app.get('/api/daily-quote', requireAuth, async (req, res) => {
+    const clientDate = typeof req.query.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(req.query.date)
+        ? req.query.date
+        : new Date().toISOString().slice(0, 10);
+
+    const result = await pool.query(
+        'SELECT * FROM daily_quotes WHERE user_id = $1 AND quote_date = $2',
+        [req.user.id, clientDate]
+    );
+
+    res.json({
+        success: true,
+        quote: result.rows[0] ? result.rows[0].quote_text : '',
+        date: clientDate,
+    });
+});
+
+// Save or update today's quote for the user
+app.post('/api/daily-quote', requireAuth, async (req, res) => {
+    const clientDate = typeof req.body?.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(req.body.date)
+        ? req.body.date
+        : new Date().toISOString().slice(0, 10);
+    const quoteText = typeof req.body?.quote === 'string' ? req.body.quote.trim().slice(0, 500) : '';
+
+    const result = await pool.query(
+        `INSERT INTO daily_quotes (user_id, quote_text, quote_date, updated_at)
+         VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+         ON CONFLICT (user_id, quote_date)
+         DO UPDATE SET quote_text = EXCLUDED.quote_text, updated_at = CURRENT_TIMESTAMP
+         RETURNING quote_text, quote_date`,
+        [req.user.id, quoteText, clientDate]
+    );
+
+    res.json({
+        success: true,
+        quote: result.rows[0].quote_text,
+        date: clientDate,
+    });
 });
 
 // Catch-all error handler so the frontend always gets JSON back

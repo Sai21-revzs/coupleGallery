@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { API_URL, LAYOUTS, getLayout } from './constants';
-import MusicPlayer from './MusicPlayer';
+import { API_URL, LAYOUTS, getLayout } from '../../services/constants';
+import MusicPlayer from '../common/MusicPlayer';
 import './CreateMemory.css';
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
