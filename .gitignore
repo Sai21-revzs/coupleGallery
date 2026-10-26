@@ -5,8 +5,8 @@ node_modules/
 .env
 .env.*
 
-# User-uploaded photos and MP3s
-backend/uploads/
+# User-uploaded photos and MP3s (uncomment if using cloud storage)
+# backend/uploads/
 
 # Build output
 dist/
