@@ -1,0 +1,349 @@
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap');
+
+.app-container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 40%, #fff0f6 0%, #f3d9ee 55%, #d9b8e6 100%);
+  transition: opacity 0.9s ease, transform 0.9s ease, filter 0.9s ease;
+}
+
+.app-container.leaving {
+  opacity: 0;
+  transform: scale(1.15);
+  filter: blur(8px);
+}
+
+/* Floating background hearts */
+.hearts {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.heart {
+  position: absolute;
+  bottom: -50px;
+  color: #e86a9a;
+  animation: rise linear infinite;
+}
+
+.landing-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+/* Big self-drawing heart behind the title */
+.big-heart {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(90vw, 760px);
+  transform: translate(-50%, -52%);
+  z-index: -1;
+  overflow: visible;
+  animation: heartbeat 1.6s ease-in-out 3.6s infinite;
+}
+
+.big-heart-path {
+  fill: url(#heartGrad);
+  fill-opacity: 0;
+  stroke: #e0559a;
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  filter: drop-shadow(0 0 2px rgba(232, 106, 154, 0.6));
+  animation:
+    drawHeart 2.8s ease-in-out forwards,
+    fillHeart 1.2s ease 2.6s forwards;
+}
+
+.landing-title {
+  font-family: 'Great Vibes', cursive;
+  font-size: clamp(4rem, 11vw, 8.5rem);
+  font-weight: 400;
+  letter-spacing: 1px;
+  line-height: 1.1;
+  margin: 0;
+  color: #5a2a6b;
+  text-shadow: 0 2px 0 #fff, 0 6px 25px rgba(255, 255, 255, 0.9);
+  animation: fadeUp 1.2s ease 0.4s both, float 4s ease-in-out 1.6s infinite;
+}
+
+.subtitle {
+  margin: 0.5rem 0 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: clamp(1.3rem, 2.5vw, 1.9rem);
+  color: #6e3d7e;
+  letter-spacing: 3px;
+  animation: fadeUp 1.2s ease 1s both;
+}
+
+.landing-content .enter-button {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 1.4rem;
+  letter-spacing: 2px;
+  padding: 12px 36px;
+  background: linear-gradient(135deg, #e86a9a, #9b5bb8);
+  box-shadow: 0 8px 25px rgba(155, 91, 184, 0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  animation: fadeUp 1.2s ease 1.6s both;
+}
+
+.landing-content .enter-button:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 12px 30px rgba(232, 106, 154, 0.55);
+}
+
+/* Gallery entrance transition */
+.gallery-enter {
+  width: 100%;
+  animation: galleryIn 0.9s ease both;
+}
+
+@keyframes rise {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg) scale(0.8);
+  }
+
+  50% {
+    transform: translateY(-60vh) translateX(25px) rotate(15deg) scale(1.1);
+  }
+
+  100% {
+    transform: translateY(-120vh) translateX(-25px) rotate(-15deg) scale(0.9);
+  }
+}
+
+@keyframes drawHeart {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes fillHeart {
+  to {
+    fill-opacity: 0.35;
+  }
+}
+
+@keyframes heartbeat {
+
+  0%,
+  100% {
+    transform: translate(-50%, -52%) scale(1);
+  }
+
+  15% {
+    transform: translate(-50%, -52%) scale(1.04);
+  }
+
+  30% {
+    transform: translate(-50%, -52%) scale(1);
+  }
+
+  45% {
+    transform: translate(-50%, -52%) scale(1.06);
+  }
+
+  60% {
+    transform: translate(-50%, -52%) scale(1);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes galleryIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+h1 {
+  font-size: 3.5rem;
+  font-weight: 300;
+  letter-spacing: 3px;
+  color: #633d6c;
+  animation: float 4s ease-in-out infinite;
+  /* Romantic purple */
+}
+
+.enter-button {
+  margin-top: 2rem;
+  padding: 10px 24px;
+  font-size: 1.2rem;
+  color: white;
+  background-color: #a881af;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.enter-button:hover {
+  background-color: #72518f;
+}
+
+/* Default text colors for standard cards */
+.standard h3 {
+  color: #72518f;
+}
+
+.standard p {
+  color: #555;
+}
+
+/* Dark theme for Layout A or Filmstrips */
+.layout-a {
+  background-color: #111;
+}
+
+.layout-a h3,
+.layout-a p {
+  color: white;
+}
+
+/* PHOTOB BASE CSS */
+
+.card-base {
+  width: 250px;
+  padding: 1rem;
+  margin: 1rem;
+  background-color: #111;
+  /* Dark theme for all */
+  color: white;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.photo-placeholder,
+.photo-slot {
+  background-color: #23162b;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.photo-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* PHOTOBOOT TEMPLATE */
+
+.photo-grid {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 0.9rem;
+}
+
+/* Layout 1 (Solo / 1 Pose): 1 column, tall photo */
+.layout-1 .photo-grid {
+  grid-template-columns: 1fr;
+}
+
+.layout-1 .photo-placeholder,
+.layout-1 .photo-slot {
+  height: 220px;
+}
+
+/* Layout 2V (Vertical / 2 Pose): 1 column, 2 stacked photos */
+.layout-2v .photo-grid {
+  grid-template-columns: 1fr;
+}
+
+.layout-2v .photo-placeholder,
+.layout-2v .photo-slot {
+  height: 130px;
+}
+
+/* Layout 2H (Horizontal / 2 Pose): 2 equal columns side-by-side */
+.layout-2h .photo-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+.layout-2h .photo-placeholder,
+.layout-2h .photo-slot {
+  height: 130px;
+}
+
+/* Layout 4 (Window Grid / 4 Pose): 2 equal columns, 2 rows */
+.layout-4 .photo-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+.layout-4 .photo-placeholder,
+.layout-4 .photo-slot {
+  height: 105px;
+}
+
+.card-text h3 {
+  margin: 0 0 5px 0;
+  font-family: 'Brush Script MT', cursive;
+  font-weight: normal;
+}
+
+.card-text p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #ccc;
+}
+
+.card-music {
+  margin-top: 0.8rem;
+  width: 100%;
+}
+
+
+
+
+
+
+
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-15px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}

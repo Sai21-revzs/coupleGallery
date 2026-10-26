@@ -1,0 +1,591 @@
+/* ===================== CREATE MEMORY FORM ===================== */
+
+.create-memory {
+  text-align: left;
+  color: #3d2b4f;
+  font-family: 'Cormorant Garamond', 'Segoe UI', serif;
+}
+
+.create-memory h2 {
+  font-family: 'Great Vibes', cursive;
+  font-size: 3.2rem;
+  color: #5a2a6b;
+  text-align: center;
+  margin: 0 0 1.2rem;
+  line-height: 1;
+}
+
+.cm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.cm-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  padding: 1.1rem 1.2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(90, 42, 107, 0.04);
+}
+
+.cm-step {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #5a2a6b;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.cm-step span {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e86a9a, #9b5bb8);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.cm-step em {
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: #8c6a99;
+  font-style: italic;
+}
+
+/* ---------- 1. Layout Radio Cards ---------- */
+
+.layout-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+@media (min-width: 440px) {
+  .layout-options {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.layout-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.75rem 0.5rem;
+  background: rgba(255, 255, 255, 0.85);
+  border: 2px solid rgba(155, 91, 184, 0.2);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: inherit;
+  color: inherit;
+  outline: none;
+}
+
+.layout-option:hover {
+  transform: translateY(-2px);
+  border-color: #e86a9a;
+  box-shadow: 0 6px 16px rgba(232, 106, 154, 0.2);
+  background: #fff;
+}
+
+.layout-option.selected {
+  border-color: #9b5bb8;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(155, 91, 184, 0.25), 0 8px 20px rgba(90, 42, 107, 0.15);
+}
+
+/* Visual previews of each layout arrangement */
+.layout-preview {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  padding: 3px;
+  gap: 3px;
+  background: #23162b;
+  border-radius: 5px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.layout-preview span {
+  background: #ffb8d6;
+  border-radius: 2px;
+  transition: background 0.2s ease;
+}
+
+.layout-option.selected .layout-preview span {
+  background: #ff85b8;
+}
+
+/* Solo: 1 big square */
+.layout-preview.layout-1 {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
+
+/* Horizontal: 2 columns, 1 row */
+.layout-preview.layout-2h {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+}
+
+/* Vertical: 1 column, 2 rows */
+.layout-preview.layout-2v {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+/* Window Grid: 2 columns, 2 rows */
+.layout-preview.layout-4 {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+.layout-name {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: #4a2157;
+  line-height: 1.1;
+}
+
+.layout-count {
+  font-size: 0.8rem;
+  color: #8c6a99;
+  letter-spacing: 0.5px;
+}
+
+.layout-check {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #9b5bb8;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+
+/* Confirm layout switch dialog */
+.cm-confirm {
+  background: #fff4e6;
+  border: 1.5px solid #f97316;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  margin-top: 0.5rem;
+  color: #7c2d12;
+  font-size: 0.95rem;
+}
+
+.cm-confirm p {
+  margin: 0 0 0.6rem;
+  line-height: 1.35;
+}
+
+.cm-confirm-actions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: flex-end;
+}
+
+/* ---------- 2. Fields (Title & Date) ---------- */
+
+.cm-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.cm-fields input {
+  padding: 10px 14px;
+  font-family: inherit;
+  font-size: 1.05rem;
+  color: #3d2b4f;
+  background: #fff;
+  border: 1.5px solid rgba(155, 91, 184, 0.25);
+  border-radius: 10px;
+  outline: none;
+  transition: all 0.25s ease;
+}
+
+.cm-fields input:focus {
+  border-color: #e86a9a;
+  box-shadow: 0 0 0 3px rgba(232, 106, 154, 0.18);
+}
+
+/* ---------- 3. Photos Area ---------- */
+
+.upload-locked {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1.8rem 1rem;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1.5px dashed rgba(155, 91, 184, 0.35);
+  border-radius: 12px;
+  color: #7a4a8a;
+  font-size: 1.05rem;
+  font-style: italic;
+  text-align: center;
+}
+
+.upload-locked-icon {
+  font-size: 1.4rem;
+  font-style: normal;
+}
+
+.upload-area {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.upload-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.upload-counter {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #6e3d7e;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(155, 91, 184, 0.12);
+  transition: all 0.25s ease;
+}
+
+.upload-counter.complete {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+/* Upload photo grid corresponding to the selected layout */
+.upload-grid {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+  padding: 10px;
+  background: #1c1420;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(30, 10, 40, 0.25);
+}
+
+/* Solo: 1 tall photo */
+.upload-grid.layout-1 {
+  grid-template-columns: 1fr;
+}
+.upload-grid.layout-1 .upload-slot {
+  height: 200px;
+}
+
+/* Horizontal: 2 side by side */
+.upload-grid.layout-2h {
+  grid-template-columns: 1fr 1fr;
+}
+.upload-grid.layout-2h .upload-slot {
+  height: 130px;
+}
+
+/* Vertical: 2 stacked */
+.upload-grid.layout-2v {
+  grid-template-columns: 1fr;
+}
+.upload-grid.layout-2v .upload-slot {
+  height: 120px;
+}
+
+/* Window Grid: 2x2 */
+.upload-grid.layout-4 {
+  grid-template-columns: 1fr 1fr;
+}
+.upload-grid.layout-4 .upload-slot {
+  height: 110px;
+}
+
+.upload-slot {
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #2b1d30;
+}
+
+.upload-slot.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1.5px dashed rgba(255, 255, 255, 0.35);
+  color: #f3d9ee;
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.upload-slot.empty:hover:not(:disabled) {
+  background: #392642;
+  border-color: #e86a9a;
+  color: #fff;
+}
+
+.slot-plus {
+  font-size: 1.4rem;
+  line-height: 1;
+  color: #ff85b8;
+}
+
+.upload-slot.filled img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.slot-actions {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 6px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.upload-slot.filled:hover .slot-actions,
+.upload-slot.filled:focus-within .slot-actions {
+  opacity: 1;
+}
+
+.slot-actions button {
+  background: rgba(255, 255, 255, 0.9);
+  color: #2b1d30;
+  border: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.slot-actions button:hover {
+  background: #fff;
+  color: #e8577f;
+}
+
+.upload-help {
+  font-size: 0.85rem;
+  color: #7a4a8a;
+  text-align: center;
+  margin: 0;
+}
+
+/* Warnings and error callouts */
+.cm-warning {
+  margin: 0;
+  padding: 8px 12px;
+  background: #fef2f2;
+  border-left: 4px solid #ef4444;
+  color: #b91c1c;
+  font-size: 0.95rem;
+  border-radius: 4px;
+  line-height: 1.35;
+}
+
+.cm-error {
+  margin: 0;
+  padding: 8px 12px;
+  background: #fdf2f8;
+  border-left: 4px solid #e8577f;
+  color: #9d174d;
+  font-size: 0.92rem;
+  border-radius: 4px;
+}
+
+.cm-notice {
+  margin: 0;
+  padding: 8px 12px;
+  background: #eff6ff;
+  border-left: 4px solid #3b82f6;
+  color: #1e40af;
+  font-size: 0.92rem;
+  border-radius: 4px;
+}
+
+.cm-server-error {
+  margin: 0.5rem 0 0;
+  text-align: center;
+  border-left: none;
+  border: 1.5px solid #e8577f;
+}
+
+/* ---------- 4. Soundtrack Area ---------- */
+
+.music-upload {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 10px 16px;
+  font-size: 1.05rem;
+}
+
+.music-selected {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.music-file {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 6px 12px;
+  background: #fff;
+  border: 1px solid rgba(155, 91, 184, 0.25);
+  border-radius: 8px;
+}
+
+.music-file-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #5a2a6b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.music-file-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex: none;
+}
+
+.cm-link {
+  background: none;
+  border: none;
+  color: #72518f;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.88rem;
+  padding: 0;
+}
+
+.cm-link:hover {
+  color: #5a2a6b;
+}
+
+.cm-link.danger {
+  color: #dc2626;
+}
+
+.cm-link.danger:hover {
+  color: #991b1b;
+}
+
+/* ---------- Common Buttons ---------- */
+
+.cm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-family: inherit;
+  font-weight: 600;
+  padding: 7px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.cm-btn-primary {
+  color: #fff;
+  background: linear-gradient(135deg, #e86a9a, #9b5bb8);
+  box-shadow: 0 4px 12px rgba(155, 91, 184, 0.3);
+}
+
+.cm-btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(232, 106, 154, 0.4);
+}
+
+.cm-btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.cm-btn-outline {
+  background: #fff;
+  color: #5a2a6b;
+  border: 1.5px solid rgba(155, 91, 184, 0.35);
+}
+
+.cm-btn-outline:hover {
+  background: #faf5fc;
+  border-color: #9b5bb8;
+}
+
+.cm-btn-ghost {
+  background: transparent;
+  color: #5a2a6b;
+  border: 1px solid rgba(90, 42, 107, 0.25);
+}
+
+.cm-btn-danger {
+  background: #dc2626;
+  color: #fff;
+}
+
+.cm-btn-danger:hover {
+  background: #b91c1c;
+}
+
+.save-hint {
+  font-size: 0.9rem;
+  color: #8c6a99;
+  text-align: center;
+  margin: -0.3rem 0 0;
+  font-style: italic;
+}
+
+.cm-cancel {
+  background: none;
+  border: none;
+  color: #72518f;
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: inherit;
+  font-size: 1.05rem;
+  align-self: center;
+}
+
+.cm-cancel:hover {
+  color: #5a2a6b;
+}

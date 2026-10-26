@@ -1,0 +1,58 @@
+PROJECT DOCUMENTARY
+🎬Phase 1: Foundation & Setup
+Status: Completed
+
+WHAT WE BUILT:
+- Created the root `Fullstack` workspace.
+- Implemented Separation of Concerns architecture (frontend and backend folders).
+- Initialized Git for version control.
+- Initialized Node.js (package.json) in the backend and wrote our first server.js script.
+- Scaffolding a React frontend using Vite.
+- Started our local frontend development server.
+
+CONCEPTS MASTERED:
+- Command Line Interface (CLI) navigation (cd, mkdir).
+- npm (Node Package Manager) basics.
+- Component separation (Frontend vs Backend).
+- Running local development servers.
+
+🎬 Project Documentary: Phase 2 (React Fundamentals)
+Date: October 2026
+
+* The Mission: Build the interactive interface for the Couple Gallery.
+
+* What we built:
+  1. A beautifully styled landing page with a sweet, lavender color palette.
+  2. A CSS keyframe animation for floating text.
+  3. A state-driven transition that swaps the landing page for the gallery without reloading the browser.
+  4. A dynamic, reusable `MemoryCard` component.
+  5. Multiple photobooth layouts (1-pose, 2-pose horizontal/vertical, and 4-pose grids) powered by CSS Grid.
+
+* New Concepts Mastered:
+  - JSX (writing HTML inside JavaScript).
+  - CSS scoping and Semantic Naming for class names.
+  - React State (`useState`) for tracking user clicks and showing/hiding screens.
+  - React Props for passing custom data (like titles, dates, and layout choices) to reusable components.
+  - JavaScript loops (`for`) and array methods (`.push`) to dynamically render UI elements.
+
+Components: In React, a component is a reusable piece of the user interface. Think of them like custom HTML tags. 
+Right now, your whole app lives in the App component. We are going to create a second component called Gallery.
+
+State (useState): State is how React "remembers" things. We need our app to remember a simple yes/no question: 
+"Is the user looking at the gallery right now?" If the answer is yes, we show the Gallery component. If no, 
+we show the landing page
+
+🎬 Project Documentary: Phase 3 (Interactive Frontend)
+Date: October 2026
+
+* The Mission: Build a controlled React form to capture new memories.
+
+* What we built:
+  1. A `CreateMemory` form component with inputs for Title, Date, and a Dropdown for Layouts.
+  2. A state-driven toggle button in the Gallery to swap between the photo grid and the form.
+  3. A 'Cancel' button using a passed-down prop (`onCancel`) to return to the Gallery.
+
+* New Concepts Mastered:
+  - Controlled Components (binding `<input value={state}>` to `onChange` events).
+  - Intercepting form submissions using `e.preventDefault()`.
+  - Child-to-Parent communication (passing functions as props).

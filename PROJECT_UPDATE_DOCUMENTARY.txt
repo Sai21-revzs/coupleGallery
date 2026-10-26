@@ -1,0 +1,91 @@
+PROJECT DOCUMENTARY: PHOTO LAYOUTS, MEDIA UPLOAD & SOUNDTRACK PLAYER
+Date: October 2026
+Status: Completed & Verified
+
+================================================================================
+🎬 Phase 6: Multi-Layout Photo Upload & Soundtrack Architecture
+================================================================================
+
+THE MISSION:
+Enhance the Couple Gallery app to support 4 strictly validated photo arrangements,
+local computer photo uploads (JPG, JPEG, PNG, WebP), optional local MP3 soundtrack
+uploads with a custom audio player, and PostgreSQL media persistence.
+
+--------------------------------------------------------------------------------
+1. PHOTO LAYOUT SELECTION & ARRANGEMENT
+--------------------------------------------------------------------------------
+Four distinct layout options with visual preview cards and exact photo counts:
+- Solo (`layout-1`): Exactly 1 photo (large single image, 220px height)
+- Horizontal (`layout-2h`): Exactly 2 photos side by side (2 equal columns)
+- Vertical (`layout-2v`): Exactly 2 photos stacked (1 column, 2 rows)
+- Window Grid (`layout-4`): Exactly 4 photos in a 2-by-2 grid
+
+--------------------------------------------------------------------------------
+2. STRICT PHOTO COUNT VALIDATION (FRONTEND & BACKEND)
+--------------------------------------------------------------------------------
+- Photo count must match the chosen layout exactly. Submissions with too few or
+  too many photos are rejected immediately.
+- Frontend displays tailored warning banners:
+  * Solo (0 photos): "Please upload exactly 1 photo for the Solo layout."
+  * Horizontal (!= 2): "The Horizontal layout requires exactly 2 photos."
+  * Vertical (!= 2): "The Vertical layout requires exactly 2 photos."
+  * Window Grid (< 4): "The Window Grid layout requires exactly 4 photos. Please upload the remaining photos."
+  * Window Grid (> 4): "Maximum of 4 photos allowed for the Window Grid layout. Remove the excess photos."
+- "Save Memory" button remains disabled until required photo count is reached
+  and memory title is entered.
+- Layout change confirmation: If user selects photos and changes layout, the app
+  warns them before clearing selections to prevent accidental data loss.
+- Backend replicates all validation rules with HTTP 400 responses, preventing direct
+  API bypass or URL injection.
+
+--------------------------------------------------------------------------------
+3. LOCAL PHOTO UPLOADS
+--------------------------------------------------------------------------------
+- File picker accepts local image files (.jpg, .jpeg, .png, .webp).
+- Online image URLs, external links, and unsupported formats are rejected.
+- Multi-photo selection enabled when layout allows multiple slots.
+- Live client-side previews in the exact layout arrangement before saving.
+- Each photo slot supports individual "Replace" and "Remove" actions.
+- Real-time counter: "X of Y photos selected" (turns green upon completion).
+- Binary file signature verification on backend (magic bytes) to ensure authenticity.
+
+--------------------------------------------------------------------------------
+4. CUSTOM LOCAL MP3 MUSIC PLAYER
+--------------------------------------------------------------------------------
+- Optional MP3 soundtrack upload from computer (.mp3 only, up to 20 MB).
+- External music links, YouTube, and Spotify streams are explicitly blocked.
+- Live audio preview in the Add Memory form before submitting.
+- Custom-designed MusicPlayer component on every saved memory with a soundtrack:
+  * Play / Pause button
+  * Interactive draggable seek bar with gradient fill
+  * Current time & total duration (MM:SS format)
+  * Volume control slider & instant mute button
+  * Animated equalizer wave indicator while playing
+  * No autoplay on page load
+  * Global single-audio coordinator: playing one track automatically pauses any
+    other playing memory across the gallery.
+  * If a memory has no MP3, no broken or empty player is rendered.
+
+--------------------------------------------------------------------------------
+5. BACKEND & POSTGRESQL PERSISTENCE
+--------------------------------------------------------------------------------
+- PostgreSQL migration (`backend/migrations/001_add_media.sql`):
+  * `photos TEXT[] NOT NULL DEFAULT '{}'` (ordered array of uploaded server paths)
+  * `music_path TEXT` (file path for MP3 soundtrack, NULL if none)
+  * `music_name TEXT` (original filename for display)
+- Multer multipart storage writes files to disk (`backend/uploads/photos`, `backend/uploads/music`).
+- Static file serving via `express.static` with HTTP Range support for audio seeking.
+- Automated cleanup on DELETE: removing a memory from the database automatically
+  unlinks and deletes its associated photo and MP3 files from disk.
+
+--------------------------------------------------------------------------------
+6. VERIFICATION & TESTS
+--------------------------------------------------------------------------------
+All 6 automated end-to-end API tests passed:
+✓ TEST 1: Reject Solo layout with 0 photos (400)
+✓ TEST 2: Reject Horizontal layout with 1 photo (400)
+✓ TEST 3: Reject Vertical layout with 1 photo (400)
+✓ TEST 4: Reject Window Grid with 2 photos (400)
+✓ TEST 5: Create Solo memory with 1 JPG and 1 MP3 (200, persisted in DB & saved to disk)
+✓ TEST 6: Delete created memory (200, row deleted and disk files unlinked)
+✓ Vite production build: 0 errors

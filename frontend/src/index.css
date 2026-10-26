@@ -1,0 +1,24 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: linear-gradient(160deg, #fff0f6 0%, #f5e1f3 35%, #e6d2f5 70%, #d8c4f0 100%) fixed;
+  background-attachment: fixed;
+  background-size: cover;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #3d2b4f;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
