@@ -849,11 +849,11 @@ app.use((err, req, res, next) => {
     res.status(err.status || 500).json({ success: false, error: 'Something went wrong on the server.' });
 });
 
+const PORT = process.env.PORT || 5000;
 initDatabase()
     .then(() => {
-        app.listen(5000, (err) => {
-            if (err) throw err;
-            console.log('server open');
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
         });
     })
     .catch((err) => {
