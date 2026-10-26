@@ -1,10 +1,23 @@
 import './App.css';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Gallery from './Gallery';
+import AuthPage from './AuthPage';
+import { API_URL } from './constants';
 
+const TOKEN_KEY = 'memory_auth_token';
+const USER_KEY = 'memory_auth_user';
 
 function App() {
 
+  const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY) || '');
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem(USER_KEY);
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
   const [showGallery, setShowGallery] = useState(false);
   const [leaving, setLeaving] = useState(false);
 
@@ -24,20 +37,78 @@ function App() {
 
   const [memories, setMemories] = useState([]);
 
-  useEffect(() => {
-    fetch('http://localhost:5000/api/memories')
-      .then(response => response.json())
-      .then(data => {
-        setMemories(data)
-      });
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+    setToken('');
+    setUser(null);
+    setMemories([]);
+    setShowGallery(false);
+    setLeaving(false);
   }, []);
+
+  const handleUpdateUser = useCallback((updatedUser) => {
+    localStorage.setItem(USER_KEY, JSON.stringify(updatedUser));
+    setUser(updatedUser);
+  }, []);
+
+  const handleAuthSuccess = (newToken, newUser) => {
+    localStorage.setItem(TOKEN_KEY, newToken);
+    localStorage.setItem(USER_KEY, JSON.stringify(newUser));
+    setToken(newToken);
+    setUser(newUser);
+    setShowGallery(false);
+    setLeaving(false);
+  };
+
+  useEffect(() => {
+    if (!token) {
+      setMemories([]);
+      return;
+    }
+
+    fetch(`${API_URL}/api/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => {
+        if (data?.success && data.user) {
+          handleUpdateUser(data.user);
+        }
+      })
+      .catch(() => {});
+
+    fetch(`${API_URL}/api/memories`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(async response => {
+        if (response.status === 401) {
+          handleLogout();
+          return null;
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (Array.isArray(data)) {
+          setMemories(data);
+        }
+      })
+      .catch(err => console.error('Could not fetch memories:', err));
+  }, [token, handleLogout, handleUpdateUser]);
 
 
   const deleteMemory = (id) => {
-    fetch(`http://localhost:5000/api/memories/${id}`, {
-      method: 'DELETE'
+    fetch(`${API_URL}/api/memories/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
     })
-      .then(response => response.json())
+      .then(response => {
+        if (response.status === 401) {
+          handleLogout();
+          return {};
+        }
+        return response.json();
+      })
       .then(data => {
         if (data.success) {
           setMemories(memories => memories.filter(memory => memory.id !== id))
@@ -50,6 +121,12 @@ function App() {
     setTimeout(() => setShowGallery(true), 900);
   };
 
+  // Step 1: Require Login / Sign Up first
+  if (!token || !user) {
+    return <AuthPage hearts={hearts} onAuthSuccess={handleAuthSuccess} />;
+  }
+
+  // Step 3: Gallery view after clicking "Open gallery"
   if (showGallery) {
     return (
       <div className="gallery-enter">
@@ -57,13 +134,27 @@ function App() {
           memories={memories}
           setMemories={setMemories}
           deleteMemory={deleteMemory}
+          token={token}
+          user={user}
+          onUpdateUser={handleUpdateUser}
+          onLogout={handleLogout}
           onHome={() => { setLeaving(false); setShowGallery(false); }} />
       </div>
     );
   }
 
+  const displayName = user.username || (user.email ? user.email.split('@')[0] : 'User');
+
+  // Step 2: Landing page with heart animation and "Open gallery" button
   return (
     <div className={`app-container ${leaving ? 'leaving' : ''}`}>
+      <div className="landing-user-bar">
+        <span className="landing-user-email" title={displayName}>{displayName}</span>
+        <button type="button" className="landing-logout-btn" onClick={handleLogout}>
+          Log out
+        </button>
+      </div>
+
       <div className="hearts" aria-hidden="true">
         {hearts.map(h => (
           <span key={h.id} className="heart" style={h.style}>♥</span>

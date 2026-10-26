@@ -215,16 +215,21 @@ function CreateMemory(props) {
         setSubmitting(true);
         fetch(`${API_URL}/api/memories`, {
             method: 'POST',
+            headers: props.token ? { Authorization: `Bearer ${props.token}` } : {},
             body: data // the browser sets the multipart Content-Type for us
         })
             .then(async response => {
+                if (response.status === 401 && props.onLogout) {
+                    props.onLogout();
+                    throw new Error('Session expired. Please log in again.');
+                }
                 const data = await response.json().catch(() => ({}));
                 if (!response.ok || !data.success) throw new Error(data.error || 'Could not save the memory.');
                 return data;
             })
             .then(data => {
                 console.log("Server replied:", data)
-                props.setMemories([...props.memories, data.added]); //1
+                props.setMemories([data.added, ...props.memories]); //1
                 props.onCancel(); //2
             })
             .catch(err => {

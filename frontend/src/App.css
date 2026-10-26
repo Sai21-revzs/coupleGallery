@@ -18,6 +18,54 @@
   filter: blur(8px);
 }
 
+/* Signed-in user pill on the landing screen */
+.landing-user-bar {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.5rem;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 6px 8px 6px 16px;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 999px;
+  box-shadow: 0 4px 18px rgba(90, 42, 107, 0.12);
+  font-family: 'Cormorant Garamond', serif;
+  animation: fadeUp 0.9s ease 0.2s both;
+}
+
+.landing-user-email {
+  font-size: 1rem;
+  font-style: italic;
+  color: #5a2a6b;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.landing-logout-btn {
+  padding: 6px 14px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: #5a2a6b;
+  background: rgba(155, 91, 184, 0.12);
+  border: 1px solid rgba(90, 42, 107, 0.25);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.landing-logout-btn:hover {
+  background: #5a2a6b;
+  color: #fff;
+}
+
 /* Floating background hearts */
 .hearts {
   position: absolute;
@@ -110,10 +158,20 @@
   box-shadow: 0 12px 30px rgba(232, 106, 154, 0.55);
 }
 
-/* Gallery entrance transition */
+/* Gallery entrance transition (opacity-only on wrapper so position:fixed children stay pinned to the viewport) */
 .gallery-enter {
   width: 100%;
-  animation: galleryIn 0.9s ease both;
+  animation: galleryIn 0.6s ease;
+}
+
+@keyframes galleryIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes rise {
@@ -175,18 +233,6 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes galleryIn {
-  from {
-    opacity: 0;
-    transform: translateY(30px) scale(0.98);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
   }
 }
 

@@ -4,14 +4,21 @@
   box-sizing: border-box;
 }
 
-html,
+html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;
+  background: linear-gradient(180deg, #eedcf5 0%, #e2c2f0 50%, #d4aee8 100%) fixed;
+}
+
 body {
   margin: 0;
   padding: 0;
   width: 100%;
   min-height: 100vh;
-  overflow-x: hidden;
-  background: linear-gradient(160deg, #fff0f6 0%, #f5e1f3 35%, #e6d2f5 70%, #d8c4f0 100%) fixed;
+  overflow: visible;
+  background: linear-gradient(180deg, #eedcf5 0%, #e2c2f0 50%, #d4aee8 100%) fixed;
   background-attachment: fixed;
   background-size: cover;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -21,4 +28,5 @@ body {
 #root {
   width: 100%;
   min-height: 100vh;
+  overflow: visible;
 }

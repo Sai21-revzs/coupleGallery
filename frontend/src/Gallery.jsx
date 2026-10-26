@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import MemoryCard from './MemoryCard';
 import CreateMemory from './createMemory';
 import Navbar from './Navbar';
 import './Gallery.css';
 
-function Gallery({ memories, setMemories, deleteMemory, onHome }) {
+function Gallery({ memories, setMemories, deleteMemory, onHome, token, user, onUpdateUser, onLogout }) {
 
     const [showForm, openForm] = useState(false);
     const [search, setSearch] = useState('');
@@ -22,8 +23,10 @@ function Gallery({ memories, setMemories, deleteMemory, onHome }) {
             <Navbar
                 count={memories.length}
                 onHome={onHome}
-                onAdd={() => openForm(true)}
-                showingForm={showForm}
+                user={user}
+                token={token}
+                onUpdateUser={onUpdateUser}
+                onLogout={onLogout}
             />
 
             {showForm ? (
@@ -31,7 +34,9 @@ function Gallery({ memories, setMemories, deleteMemory, onHome }) {
                     <div className="form-panel">
                         <CreateMemory onCancel={() => openForm(false)} //2
                             memories={memories}
-                            setMemories={setMemories} /> {/* 1 */}
+                            setMemories={setMemories}
+                            token={token}
+                            onLogout={onLogout} /> {/* 1 */}
                     </div>
                 </main>
             ) : (
@@ -86,6 +91,17 @@ function Gallery({ memories, setMemories, deleteMemory, onHome }) {
                                 </div>
                             ))}
                         </div>
+                    )}
+
+                    {createPortal(
+                        <button
+                            type="button"
+                            className="btn btn-primary fab-add-memory"
+                            onClick={() => openForm(true)}
+                        >
+                            <span className="btn-icon">+</span> Add Memory
+                        </button>,
+                        document.body
                     )}
                 </main>
             )}

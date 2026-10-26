@@ -1,4 +1,4 @@
-PROJECT DOCUMENTARY: PHOTO LAYOUTS, MEDIA UPLOAD & SOUNDTRACK PLAYER
+PROJECT DOCUMENTARY: PHOTO LAYOUTS, MEDIA UPLOAD, SOUNDTRACK PLAYER & AUTHENTICATION
 Date: October 2026
 Status: Completed & Verified
 
@@ -89,3 +89,54 @@ All 6 automated end-to-end API tests passed:
 ✓ TEST 5: Create Solo memory with 1 JPG and 1 MP3 (200, persisted in DB & saved to disk)
 ✓ TEST 6: Delete created memory (200, row deleted and disk files unlinked)
 ✓ Vite production build: 0 errors
+
+================================================================================
+🎬 Phase 7: Authentication, User Profile & Floating Add Memory UI
+================================================================================
+
+THE MISSION:
+Add email/password authentication with username and strengthened password rules,
+per-account private memories in PostgreSQL, a rightmost navbar profile badge
+with circle avatar + name and click-to-edit profile modal, and a floating
+"+ Add Memory" button at the bottom-right of the gallery page.
+
+--------------------------------------------------------------------------------
+1. AUTHENTICATION & PASSWORD STRENGTH
+--------------------------------------------------------------------------------
+- Sign Up requires:
+  * Username (used as display name in the navbar)
+  * Valid Email Address (unique per user)
+  * Strengthened Password: must be at least 6 characters AND include both
+    letters (`[a-zA-Z]`) and numbers (`[0-9]`).
+  * Confirm Password match check.
+- Log In verifies email and password against salted `crypto.scrypt` hashes in
+  PostgreSQL and returns an HMAC-SHA256 signed session token.
+- Flow:
+  1. Log In / Sign Up screen (`AuthPage.jsx`)
+  2. Animated Landing Page with self-drawing heart and "Open gallery" button (`App.jsx`)
+  3. Personal Gallery (`Gallery.jsx`)
+
+--------------------------------------------------------------------------------
+2. NAVBAR PROFILE & EDIT PROFILE MODAL
+--------------------------------------------------------------------------------
+- Email is not displayed in the navbar.
+- Rightmost side of the navbar displays a clickable profile pill containing:
+  * Circle profile picture (`avatar_path` or initial avatar placeholder)
+  * User's name (`username`)
+- Clicking the profile picture or name opens the "Edit Profile" modal:
+  * Edit name (`username`)
+  * Upload a profile picture from the computer (`.jpg`, `.jpeg`, `.png`, `.webp`)
+    stored in `backend/uploads/avatars` and persisted in `users.avatar_path`.
+
+--------------------------------------------------------------------------------
+3. FLOATING "+ ADD MEMORY" BUTTON
+--------------------------------------------------------------------------------
+- Moved "+ Add Memory" out of the navbar to the bottom-right corner of the
+  gallery page (`position: fixed; right: 2.2rem; bottom: 2.2rem;`).
+- Added continuous vertical floating animation (`@keyframes fabFloat`).
+
+--------------------------------------------------------------------------------
+4. POSTGRESQL MIGRATIONS (`002_add_auth.sql` & `003_add_user_profile.sql`)
+--------------------------------------------------------------------------------
+- `users` table: `id`, `username`, `email`, `password_hash`, `avatar_path`, `created_at`
+- `memories.user_id` foreign key linking memories privately to each user account.
