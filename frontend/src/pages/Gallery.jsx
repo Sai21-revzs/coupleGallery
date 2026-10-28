@@ -26,6 +26,7 @@ function Gallery({
     const [showForm, openForm] = useState(false);
     const [search, setSearch] = useState('');
     const [fabMenuOpen, setFabMenuOpen] = useState(false);
+    const [fabPopping, setFabPopping] = useState(false);
     const [placingNote, setPlacingNote] = useState(false);
     const [newNoteId, setNewNoteId] = useState(null);
     const [showBucketList, setShowBucketList] = useState(false);
@@ -432,8 +433,12 @@ function Gallery({
                     {/* Main Single Button: Heart with Plus Icon inside */}
                     <button
                         type="button"
-                        className={`heart-plus-fab ${fabMenuOpen || placingNote ? 'active' : ''}`}
-                        onClick={() => setFabMenuOpen(prev => !prev)}
+                        className={`heart-plus-fab ${fabMenuOpen || placingNote ? 'active' : ''} ${fabPopping ? 'is-animating' : ''}`}
+                        onClick={() => {
+                            setFabPopping(true);
+                            setFabMenuOpen(prev => !prev);
+                        }}
+                        onAnimationEnd={() => setFabPopping(false)}
                         title="Add memory, bucket list, or sticky note"
                         aria-label="Add memory, bucket list, or sticky note"
                         aria-expanded={fabMenuOpen}
@@ -459,6 +464,19 @@ function Gallery({
                             </g>
                         </svg>
                     </button>
+
+                    {/* Emil Kowalski Expanding Shockwave Ring */}
+                    <span className="heart-ring" aria-hidden="true" />
+
+                    {/* Emil Kowalski Orbital Confetti / Sparks */}
+                    <div className="sparks-container" aria-hidden="true">
+                        <span className="spark spark-1" />
+                        <span className="spark spark-2" />
+                        <span className="spark spark-3" />
+                        <span className="spark spark-4" />
+                        <span className="spark spark-5" />
+                        <span className="spark spark-6" />
+                    </div>
                 </div>,
                 document.body
             )}

@@ -1,0 +1,153 @@
+/* =========================================================
+   Emil Kowalski Heart Button Animation Styles
+   ========================================================= */
+
+.emil-heart-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 9999px;
+  color: #94a3b8;
+  user-select: none;
+  outline: none;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.emil-heart-btn:hover {
+  background-color: rgba(244, 63, 94, 0.08);
+  color: #f43f5e;
+}
+
+.emil-heart-btn:active {
+  transform: scale(0.92);
+}
+
+.emil-heart-btn.is-liked {
+  color: #f43f5e;
+}
+
+.heart-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heart-icon {
+  display: block;
+  transform-origin: center;
+  transition: fill 0.2s ease, stroke 0.2s ease, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Emil's Spring Pop Keyframe */
+.emil-heart-btn.is-animating .heart-icon {
+  animation: emilHeartPop 0.5s cubic-bezier(0.17, 0.89, 0.32, 1.49) forwards;
+}
+
+@keyframes emilHeartPop {
+  0% {
+    transform: scale(0.8);
+  }
+  40% {
+    transform: scale(1.35);
+  }
+  70% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Expanding Shockwave Ring */
+.emil-heart-btn .heart-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid #f43f5e;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0);
+}
+
+.emil-heart-btn.is-animating .heart-ring {
+  animation: ringBurst 0.45s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+
+@keyframes ringBurst {
+  0% {
+    transform: scale(0.2);
+    border-width: 3px;
+    opacity: 0.95;
+  }
+  70% {
+    border-width: 1.5px;
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.65);
+    border-width: 0px;
+    opacity: 0;
+  }
+}
+
+/* Confetti Sparks */
+.emil-heart-btn .sparks-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.emil-heart-btn .spark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.emil-heart-btn.is-animating .spark {
+  animation: sparkBurst 0.45s ease-out forwards;
+}
+
+.emil-heart-btn .spark-1 { background-color: #f43f5e; --tx: 0px;   --ty: -18px; }
+.emil-heart-btn .spark-2 { background-color: #fb7185; --tx: 16px;  --ty: -10px; }
+.emil-heart-btn .spark-3 { background-color: #fbbf24; --tx: 16px;  --ty: 10px;  }
+.emil-heart-btn .spark-4 { background-color: #f43f5e; --tx: 0px;   --ty: 18px;  }
+.emil-heart-btn .spark-5 { background-color: #fb7185; --tx: -16px; --ty: 10px;  }
+.emil-heart-btn .spark-6 { background-color: #fbbf24; --tx: -16px; --ty: -10px; }
+
+@keyframes sparkBurst {
+  0% {
+    transform: translate(-50%, -50%) translate(0, 0) scale(0);
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(var(--tx), var(--ty)) scale(1.2);
+  }
+  100% {
+    transform: translate(-50%, -50%) translate(calc(var(--tx) * 1.25), calc(var(--ty) * 1.25)) scale(0);
+    opacity: 0;
+  }
+}
+
+.heart-count {
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.heart-count.liked {
+  color: #f43f5e;
+}
+
